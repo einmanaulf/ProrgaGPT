@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Créer un projet</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+</head>
+<body>
+    <!-- Menu de navigation -->
+    <nav>
+        <ul>
+            <li><a href="/">Accueil</a></li>
+            <li>Tâches :</li>
+            <ul>
+                <li><a href="/tasks/list">Liste des tâches</a></li>
+                <li><a href="/tasks/create">Créer une tâche</a></li>
+            </ul>
+            <li>Projets :</li>
+            <ul>
+                <li><a href="/projects/list">Liste des projets</a></li>
+                <li><a href="/projects/create">Créer un projet</a></li>
+            </ul>
+            <li>Protections :</li>
+            <ul>
+                <li><a href="/protections/list">Liste des protections</a></li>
+                <li><a href="/protections/create">Créer une protection</a></li>
+            </ul>
+            <li>Matériels :</li>
+            <ul>
+                <li><a href="/materials/list">Liste des matériels</a></li>
+                <li><a href="/materials/create">Créer un matériel</a></li>
+            </ul>
+            <li>Consommables :</li>
+            <ul>
+                <li><a href="/consumables/list">Liste des consommables</a></li>
+                <li><a href="/consumables/create">Créer un consommable</a></li>
+            </ul>
+        </ul>
+    </nav>
+
+<div class="container">
+    <h1>Créer un nouveau projet</h1>
+    <form action="/projects/create" method="post">
+        <<label for="name">Nom:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="goal">Objectif:</label>
+        <input type="text" id="goal" name="goal">
+
+        <label for="principle">Principe:</label>
+        <input type="text" id="principle" name="principle">
+
+        <label for="protocol">Protocole:</label>
+        <input type="text" id="protocol" name="protocol">
+
+         <label for="protections">Protections:</label>
+         <input type="text" id="protections" name="protections">
+         <div id="protections-tags"></div>
+
+        <label for="materials">Matériels:</label>
+        <input type="text" id="materials" name="materials">
+        <div id="materials-tags"></div>
+
+        <label for="consumables">Consommables:</label>
+        <input type="text" id="consumables" name="consumables">
+        <div id="consumables-tags"></div>
+
+        <label for="prerequisites">Prérequis:</label>
+        <input type="text" id="prerequisites" name="prerequisites">
+        <div id="prerequisites-tags"></div>
+
+        <label for="time_required">Temps requis:</label>
+        <input type="number" id="time_required" name="time_required">
+
+        <select id="time_required_unit" name="time_required_unit">
+            <option value="seconds">Secondes</option>
+            <option value="minutes">Minutes</option>
+            <option value="hours">Heures</option>
+            <option value="days">Jours</option>
+            <option value="weeks">Semaines</option>
+            <option value="months">Mois</option>
+            <option value="years">Années</option>
+        </select>
+
+        <label for="funding">Financement:</label>
+        <input type="number" id="funding" name="funding">
+
+        <label for="time_to_sell">Temps pour vendre:</label>
+        <input type="number" id="time_to_sell" name="time_to_sell">
+
+        <select id="time_to_sell_unit" name="time_to_sell_unit">
+            <option value="seconds">Secondes</option>
+            <option value="minutes">Minutes</option>
+            <option value="hours">Heures</option>
+            <option value="days">Jours</option>
+            <option value="weeks">Semaines</option>
+            <option value="months">Mois</option>
+            <option value="years">Années</option>
+        </select>
+
+        <button type="submit">Créer</button>
+    </form>
+    <a href="/projects/list">Retour à la liste des projets</a>
+</div>
+
+    <script>
+        $(document).ready(function() {
+            function setupAutocomplete(selector, url, tagsContainer) {
+                $(selector).autocomplete({
+                    source: function(request, response) {
+                        $.ajax({
+                            url: url,
+                            dataType: "json",
+                            data: { query: request.term },
+                            success: function(data) {
+                                response($.map(data, function(item) {
+                                    return {
+                                        label: item.name,
+                                        value: item.name
+                                    };
+                                }));
+                            }
+                        });
+                    },
+                    minLength: 2,
+                    select: function(event, ui) {
+                        addTag(tagsContainer, ui.item.value);
+                        $(selector).val('');
+                        return false;
+                    }
+                });
+
+                $(selector).on('keydown', function(event) {
+                    if (event.key === 'Enter' && $(selector).val().trim() !== '') {
+                        addTag(tagsContainer, $(selector).val().trim());
+                        $(selector).val('');
+                        return false;
+                    }
+                });
+
+                function addTag(container, value) {
+                    const tag = $('<span class="tag">' + value + '<span class="remove-tag">x</span></span>');
+                    $(container).append(tag);
+                    tag.find('.remove-tag').on('click', function() {
+                        tag.remove();
+                    });
+                }
+            }
+
+            setupAutocomplete("#protections", "/autocomplete/protections", "#protections-tags");
+            setupAutocomplete("#materials", "/autocomplete/materials", "#materials-tags");
+            setupAutocomplete("#consumables", "/autocomplete/consumables", "#consumables-tags");
+            setupAutocomplete("#prerequisites", "/autocomplete/prerequisites", "#prerequisites-tags");
+        });
+    </script>
+</body>
+</html>

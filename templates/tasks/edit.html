@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier une tâche</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+</head>
+<body>
+<!-- Menu de navigation -->
+<nav>
+    <ul>
+        <li><a href="/">Accueil</a></li>
+        <li>Tâches :</li>
+        <ul>
+            <li><a href="/tasks/list">Liste des tâches</a></li>
+            <li><a href="/tasks/create">Créer une tâche</a></li>
+        </ul>
+        <li>Projets :</li>
+        <ul>
+            <li><a href="/projects/list">Liste des projets</a></li>
+            <li><a href="/projects/create">Créer un projet</a></li>
+        </ul>
+        <li>Protections :</li>
+        <ul>
+            <li><a href="/protections/list">Liste des protections</a></li>
+            <li><a href="/protections/create">Créer une protection</a></li>
+        </ul>
+        <li>Matériels :</li>
+        <ul>
+            <li><a href="/materials/list">Liste des matériels</a></li>
+            <li><a href="/materials/create">Créer un matériel</a></li>
+        </ul>
+        <li>Consommables :</li>
+        <ul>
+            <li><a href="/consumables/list">Liste des consommables</a></li>
+            <li><a href="/consumables/create">Créer un consommable</a></li>
+        </ul>
+    </ul>
+</nav>
+
+<div class="container">
+    <h1>Modifier la tâche</h1>
+    <form action="/tasks/{{ task.id }}/edit" method="post">
+        <label for="name">Nom:</label>
+        <input type="text" id="name" name="name" value="{{ task.name }}" required>
+        <label for="planned_date">Date de réalisation:</label>
+        <input type="date" id="planned_date" name="planned_date" value="{{ task.planned_date }}">
+        <label for="due_date">Date d'échéance:</label>
+        <input type="date" id="due_date" name="due_date" value="{{ task.due_date }}">
+        <label for="recurrence">Récurrence:</label>
+        <input type="text" id="recurrence" name="recurrence" value="{{ task.recurrence }}">
+        <label for="protections">Protections:</label>
+        <input type="text" id="protections" name="protections" value="{{ task.protections }}">
+        <br>
+
+        <label for="materials">Matériels:</label>
+        <input type="text" id="materials" name="materials" value="{{ task.materials }}">
+        <br>
+
+        <label for="consumables">Consommables:</label>
+        <input type="text" id="consumables" name="consumables" value="{{ task.consumables }}">
+        <br>
+
+        <label for="prerequisites">Prérequis:</label>
+        <input type="text" id="prerequisites" name="prerequisites" value="{{ task.prerequisites }}">
+        <br>
+        <label for="time_required">Temps requis:</label>
+        <input type="text" id="time_required" name="time_required" value="{{ task.time_required }}">
+        <select id="time_unit" name="time_unit">
+            <option value="seconds" {% if project.time_required_unit == 'seconds' %}selected{% endif %}>Secondes</option>
+            <option value="minutes" {% if project.time_required_unit == 'minutes' %}selected{% endif %}>Minutes</option>
+            <option value="hours" {% if project.time_required_unit == 'hours' %}selected{% endif %}>Heures</option>
+            <option value="days" {% if project.time_required_unit == 'days' %}selected{% endif %}>Jours</option>
+            <option value="weeks" {% if project.time_required_unit == 'weeks' %}selected{% endif %}>Semaines</option>
+            <option value="months" {% if project.time_required_unit == 'months' %}selected{% endif %}>Mois</option>
+            <option value="years" {% if project.time_required_unit == 'years' %}selected{% endif %}>Années</option>
+        </select><br>
+        <label for="funding">Fonds:</label>
+        <input type="number" id="funding" name="funding" value="{{ task.funding }}">
+        <label for="benefits">Bénéfices:</label>
+        <input type="number" id="benefits" name="benefits" value="{{ task.benefits }}">
+        <label for="time_to_sell">Temps pour vendre:</label>
+        <input type="text" id="time_to_sell" name="time_to_sell" value="{{ task.time_to_sell }}">
+        <select id="time_to_sell_unit" name="time_to_sell_unit">
+            <option value="seconds" {% if project.time_to_sell_unit == 'seconds' %}selected{% endif %}>Secondes</option>
+            <option value="minutes" {% if project.time_to_sell_unit == 'minutes' %}selected{% endif %}>Minutes</option>
+            <option value="hours" {% if project.time_to_sell_unit == 'hours' %}selected{% endif %}>Heures</option>
+            <option value="days" {% if project.time_to_sell_unit == 'days' %}selected{% endif %}>Jours</option>
+            <option value="weeks" {% if project.time_to_sell_unit == 'weeks' %}selected{% endif %}>Semaines</option>
+            <option value="months" {% if project.time_to_sell_unit == 'months' %}selected{% endif %}>Mois</option>
+            <option value="years" {% if project.time_to_sell_unit == 'years' %}selected{% endif %}>Années</option>
+        </select><br>
+        <button type="submit">Enregistrer les modifications</button>
+    </form>
+    <script>
+        $(document).ready(function() {
+            function setupAutocomplete(selector, url) {
+                $(selector).autocomplete({
+                    source: function(request, response) {
+                        $.ajax({
+                            url: url,
+                            dataType: "json",
+                            data: { query: request.term },
+                            success: function(data) {
+                                response($.map(data, function(item) {
+                                    return {
+                                        label: item.name,
+                                        value: item.name
+                                    };
+                                }));
+                            }
+                        });
+                    },
+                    minLength: 2,
+                    select: function(event, ui) {
+                        // Ajouter des traitements spécifiques ici si nécessaire
+                    }
+                });
+            }
+
+            setupAutocomplete("#protections", "/autocomplete/protections");
+            setupAutocomplete("#materials", "/autocomplete/materials");
+            setupAutocomplete("#consumables", "/autocomplete/consumables");
+            setupAutocomplete("#prerequisites", "/autocomplete/prerequisites");
+        });
+    </script>
+    <a href="/tasks/list">Retour à la liste des tâches</a>
+</div>
+</body>
+</html>

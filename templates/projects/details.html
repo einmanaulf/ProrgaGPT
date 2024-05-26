@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Détails du projet</title>
+    <link rel="stylesheet" href="/static/main.js">
+</head>
+<body>
+<!-- Menu de navigation -->
+        <nav>
+    <ul>
+        <li><a href="/">Accueil</a></li>
+        <li>Tâches :</li>
+        <ul>
+            <li><a href="/tasks/list">Liste des tâches</a></li>
+            <li><a href="/tasks/create">Créer une tâche</a></li>
+        </ul>
+        <li>Projets :</li>
+        <ul>
+            <li><a href="/projects/list">Liste des projets</a></li>
+            <li><a href="/projects/create">Créer un projet</a></li>
+        </ul>
+        <li>Protections :</li>
+        <ul>
+            <li><a href="/protections/list">Liste des protections</a></li>
+            <li><a href="/protections/create">Créer une protection</a></li>
+        </ul>
+        <li>Matériels :</li>
+        <ul>
+            <li><a href="/materials/list">Liste des matériels</a></li>
+            <li><a href="/materials/create">Créer un matériel</a></li>
+        </ul>
+        <li>Consommables :</li>
+        <ul>
+            <li><a href="/consumables/list">Liste des consommables</a></li>
+            <li><a href="/consumables/create">Créer un consommable</a></li>
+        </ul>
+    </ul>
+</nav>
+
+    <div class="container">
+        <h1>Détails du projet</h1>
+        <p><strong>Nom:</strong> {{ project.name }}</p>
+        <p><strong>Objectif:</strong> {{ project.goal }}</p>
+        <p><strong>Principe:</strong> {{ project.principle }}</p>
+        <p><strong>Protocole:</strong> {{ project.protocol }}</p>
+        <p><strong>Pré-requis:</strong> {{ project.prerequisites }}</p>
+        <p><strong>Protections:</strong> {{ project.protections }}</p>
+        <p><strong>Matériels:</strong> {{ project.materials }}</p>
+        <p><strong>Consommables:</strong> {{ project.consumables }}</p>
+        <p><strong>Temps:</strong> {{ project.time }}</p>
+        <p><strong>Financement:</strong> {{ project.funding }}</p>
+        <p><strong>Urgence:</strong> {{ project.urgency }}</p>
+        <p><strong>Impact:</strong> {{ project.impact }}</p>
+        <p><strong>Ressources:</strong> {{ project.resources }}</p>
+        <p><strong>Complexité:</strong> {{ project.complexity }}</p>
+        <p><strong>Alignement:</strong> {{ project.alignment }}</p>
+        <a href="/projects/{{ project.id }}/edit">Modifier</a>
+        <form action="{{ url_for('delete_project', id=project.id) }}" method="post" style="display:inline;">
+            <button type="submit">Supprimer</button>
+        </form>
+        <a href="/projects/list">Retour à la liste des projets</a>
+    </div>
+</body>
+</html>

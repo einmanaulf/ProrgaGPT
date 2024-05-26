@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Détails du matériel</title>
+    <link rel="stylesheet" href="/static/main.js">
+</head>
+<body>
+<!-- Menu de navigation -->
+        <nav>
+    <ul>
+        <li><a href="/">Accueil</a></li>
+        <li>Tâches :</li>
+        <ul>
+            <li><a href="/tasks/list">Liste des tâches</a></li>
+            <li><a href="/tasks/create">Créer une tâche</a></li>
+        </ul>
+        <li>Projets :</li>
+        <ul>
+            <li><a href="/projects/list">Liste des projets</a></li>
+            <li><a href="/projects/create">Créer un projet</a></li>
+        </ul>
+        <li>Protections :</li>
+        <ul>
+            <li><a href="/protections/list">Liste des protections</a></li>
+            <li><a href="/protections/create">Créer une protection</a></li>
+        </ul>
+        <li>Matériels :</li>
+        <ul>
+            <li><a href="/materials/list">Liste des matériels</a></li>
+            <li><a href="/materials/create">Créer un matériel</a></li>
+        </ul>
+        <li>Consommables :</li>
+        <ul>
+            <li><a href="/consumables/list">Liste des consommables</a></li>
+            <li><a href="/consumables/create">Créer un consommable</a></li>
+        </ul>
+    </ul>
+</nav>
+
+    <div class="container">
+        <h1>Détails du matériel</h1>
+        <p><strong>Nom:</strong> {{ material.name }}</p>
+        <p><strong>Quantité:</strong> {{ material.quantity }}</p>
+        <a href="/materials/{{ material.id }}/edit">Modifier</a>
+        <form action="{{ url_for('delete_material', id=material.id) }}" method="post" style="display:inline;">
+            <button type="submit">Supprimer</button>
+        </form>
+        <a href="/materials/list">Retour à la liste des matériels</a>
+    </div>
+</body>
+</html>
