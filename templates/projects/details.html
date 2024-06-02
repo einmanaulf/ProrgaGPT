@@ -40,21 +40,45 @@
 
     <div class="container">
         <h1>Détails du projet</h1>
-        <p><strong>Nom:</strong> {{ project.name }}</p>
-        <p><strong>Objectif:</strong> {{ project.goal }}</p>
-        <p><strong>Principe:</strong> {{ project.principle }}</p>
-        <p><strong>Protocole:</strong> {{ project.protocol }}</p>
-        <p><strong>Pré-requis:</strong> {{ project.prerequisites }}</p>
-        <p><strong>Protections:</strong> {{ project.protections }}</p>
-        <p><strong>Matériels:</strong> {{ project.materials }}</p>
-        <p><strong>Consommables:</strong> {{ project.consumables }}</p>
-        <p><strong>Temps:</strong> {{ project.time }}</p>
-        <p><strong>Financement:</strong> {{ project.funding }}</p>
-        <p><strong>Urgence:</strong> {{ project.urgency }}</p>
-        <p><strong>Impact:</strong> {{ project.impact }}</p>
-        <p><strong>Ressources:</strong> {{ project.resources }}</p>
-        <p><strong>Complexité:</strong> {{ project.complexity }}</p>
-        <p><strong>Alignement:</strong> {{ project.alignment }}</p>
+        <ul>
+            <li><strong>Nom :</strong> {{ project.name }}</li>
+            <li><strong>Objectif :</strong> {{ project.goal }}</li>
+            <li><strong>Principe :</strong> {{ project.principle }}</li>
+            <li><strong>Protocole :</strong> {{ project.protocol }}</li>
+            <li><strong>Temps requis :</strong> {{ project.time_required }} {{ project.time_required_unit }}</li>
+            <li><strong>Financement :</strong> {{ project.funding }}</li>
+            <li><strong>Bénéfices :</strong> {{ project.benefits }}</li>
+            <li><strong>Temps pour vendre :</strong> {{ project.time_to_sell }} {{ project.time_to_sell_unit }}</li>
+            <li><strong>Date d'échéance :</strong> {{ project.due_date }}</li>
+            <li><strong>Date de réalisation :</strong> {{ project.planned_date }}</li>
+            <li><strong>Urgence :</strong> {{ project.urgency }}%</li>
+            <li><strong>Impact :</strong> {{ project.impact }}%</li>
+            <li><strong>Ressources :</strong> {{ project.resources }}%</li>
+            <li><strong>Complexité :</strong> {{ project.complexity }}%</li>
+            <li><strong>Alignement :</strong> {{ project.alignment }}%</li>
+            <li><strong>Priorité totale :</strong> {{ project.priority }}%</li>
+        </ul>
+        <h3>Tâches</h3>
+        <ul>
+            {% for task in project.tasks %}
+            <li>
+                {{ task.name }}
+                {% if not task.is_done %}
+                    <a href="{{ url_for('mark_project_task_done', project_id=project.id, task_id=task.id) }}">Fait ?</a>
+                {% else %}
+                    <a href="{{ url_for('mark_project_task_undone', project_id=project.id, task_id=task.id) }}">Non fait ?</a>
+                {% endif %}
+                <a href="{{ url_for('edit_task', id=task.id) }}">Modifier</a>
+                <form action="{{ url_for('delete_project_task', project_id=project.id, task_id=task.id) }}" method="post" style="display:inline;">
+                    <button type="submit">Supprimer</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        <form action="{{ url_for('project_details', id=project.id) }}" method="post">
+            <input type="text" name="task_name" placeholder="Nom de la tâche" required>
+            <button type="submit">Ajouter une tâche</button>
+        </form>
         <a href="/projects/{{ project.id }}/edit">Modifier</a>
         <form action="{{ url_for('delete_project', id=project.id) }}" method="post" style="display:inline;">
             <button type="submit">Supprimer</button>

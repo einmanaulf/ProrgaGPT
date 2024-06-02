@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Liste des projets</title>
-    <link rel="stylesheet" href="/static/main.js">
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-<!-- Menu de navigation -->
-        <nav>
+<nav>
     <ul>
         <li><a href="/">Accueil</a></li>
         <li>Tâches :</li>
@@ -38,34 +37,44 @@
     </ul>
 </nav>
 
-    <div class="container">
-        <h1>Liste des projets</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Nom</th>
-                    <th>Priorité</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for project in projects %}
-                <tr>
-                    <td>{{ project.name }}</td>
-                    <td>{{ project.priority }}</td>
-                    <td>
-                        <a href="/projects/{{ project.id }}/details">Détails</a>
-                        <a href="/projects/{{ project.id }}/edit">Modifier</a>
-                        <form action="{{ url_for('delete_project', id=project.id) }}" method="post" style="display:inline;">
-                            <button type="submit">Supprimer</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <a href="/projects/create">Créer un nouveau projet</a>
-        <a href="/">Retour à l'accueil</a>
-    </div>
+<div class="container">
+    <h1>Liste des projets</h1>
+    <table>
+        <thead>
+            <tr>
+                <th><a href="?sort_by=name&direction={{ 'desc' if sort_by == 'name' and direction == 'asc' else 'asc' }}">Nom</a></th>
+                <th><a href="?sort_by=urgency&direction={{ 'desc' if sort_by == 'urgency' and direction == 'asc' else 'asc' }}">Urgence</a></th>
+                <th><a href="?sort_by=impact&direction={{ 'desc' if sort_by == 'impact' and direction == 'asc' else 'asc' }}">Impact</a></th>
+                <th><a href="?sort_by=resources&direction={{ 'desc' if sort_by == 'resources' and direction == 'asc' else 'asc' }}">Ressources</a></th>
+                <th><a href="?sort_by=complexity&direction={{ 'desc' if sort_by == 'complexity' and direction == 'asc' else 'asc' }}">Complexité</a></th>
+                <th><a href="?sort_by=alignment&direction={{ 'desc' if sort_by == 'alignment' and direction == 'asc' else 'asc' }}">Alignement</a></th>
+                <th><a href="?sort_by=priority&direction={{ 'desc' if sort_by == 'priority' and direction == 'asc' else 'asc' }}">Priorité</a></th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for project in projects %}
+            <tr>
+                <td>{{ project.name }}</td>
+                <td>{{ "%.2f"|format(project.urgency) }}%</td>
+                <td>{{ "%.2f"|format(project.impact) }}%</td>
+                <td>{{ "%.2f"|format(project.resources) }}%</td>
+                <td>{{ "%.2f"|format(project.complexity) }}%</td>
+                <td>{{ "%.2f"|format(project.alignment) }}%</td>
+                <td>{{ "%.2f"|format(project.priority) }}%</td>
+                <td>
+                    <a href="/projects/{{ project.id }}/details">Détails</a>
+                    <a href="/projects/{{ project.id }}/edit">Modifier</a>
+                    <form action="{{ url_for('delete_project', id=project.id) }}" method="post" style="display:inline;">
+                        <button type="submit">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/projects/create">Créer un nouveau projet</a>
+    <a href="/">Retour à l'accueil</a>
+</div>
 </body>
 </html>

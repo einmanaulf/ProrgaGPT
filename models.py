@@ -1,48 +1,114 @@
 from app import db
+from datetime import date
+
+# Associations Tables
+task_material_association = db.Table('task_material_association',
+    db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
+    db.Column('material_id', db.Integer, db.ForeignKey('material.id'))
+)
+
+task_protection_association = db.Table('task_protection_association',
+    db.Column('task_id', db.Integer, db.ForeignKey('task.id'), primary_key=True),
+    db.Column('protection_id', db.Integer, db.ForeignKey('protection.id'), primary_key=True),
+    extend_existing=True
+)
+
+task_consumable_association = db.Table('task_consumable_association',
+    db.Column('task_id', db.Integer, db.ForeignKey('task.id'), primary_key=True),
+    db.Column('consumable_id', db.Integer, db.ForeignKey('consumable.id'), primary_key=True),
+    extend_existing=True
+)
+
+task_task_association = db.Table('task_task_association',
+    db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
+    db.Column('prerequisite_task_id', db.Integer, db.ForeignKey('task.id'))
+)
+
+
+project_protection_association = db.Table('project_protection_association',
+    db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
+    db.Column('protection_id', db.Integer, db.ForeignKey('protection.id'))
+)
+
+project_material_association = db.Table('project_material_association',
+    db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
+    db.Column('material_id', db.Integer, db.ForeignKey('material.id'))
+)
+
+project_consumable_association = db.Table('project_consumable_association',
+    db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
+    db.Column('consumable_id', db.Integer, db.ForeignKey('consumable.id'))
+)
+
+project_prerequisite_association = db.Table('project_prerequisite_association',
+    db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
+    db.Column('prerequisite_id', db.Integer, db.ForeignKey('project.id'))
+)
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True)
     is_done = db.Column(db.Boolean, default=False)
-    due_date = db.Column(db.Date)
-    planned_date = db.Column(db.Date)
-    urgency = db.Column(db.Float)
-    impact = db.Column(db.Float)
-    resources = db.Column(db.Float)
-    complexity = db.Column(db.Float)
-    alignment = db.Column(db.Float)
-    recurrence = db.Column(db.String(100))
-    time_required = db.Column(db.Float)
-    time_required_unit = db.Column(db.String(20))
-    funding = db.Column(db.Float)
-    benefits = db.Column(db.Float)
-    time_to_sell = db.Column(db.Float)
-    time_to_sell_unit = db.Column(db.String(20))
-    order = db.Column(db.Integer, nullable=True)
+    due_date = db.Column(db.Date, nullable=True, default=None)
+    planned_date = db.Column(db.Date, nullable=True, default=None)
+    recurrence = db.Column(db.String(100), nullable=True, default=0)
+    time_required = db.Column(db.Float, nullable=True, default=0)
+    time_required_unit = db.Column(db.String(20), nullable=True, default='seconds')
+    funding = db.Column(db.Float, nullable=True, default=0)
+    benefits = db.Column(db.Float, nullable=True, default=0)
+    time_to_sell = db.Column(db.Float, nullable=True, default=0)
+    time_to_sell_unit = db.Column(db.String(20), nullable=True, default='seconds')
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'project_name': self.parent_project.name if self.parent_project else None,
-            'is_done': self.is_done,
-            'due_date': self.due_date,
-            'planned_date': self.planned_date,
-            'urgency': self.urgency,
-            'impact': self.impact,
-            'resources': self.resources,
-            'complexity': self.complexity,
-            'alignment': self.alignment,
-            'recurrence': self.recurrence,
-            'time_required': self.time_required,
-            'time_required_unit': self.time_required_unit,
-            'funding': self.funding,
-            'benefits': self.benefits,
-            'time_to_sell': self.time_to_sell,
-            'time_to_sell_unit': self.time_to_sell_unit,
-            'order': self.order
-        }
+    # Priority attributes
+    urgency = db.Column(db.Float, default=0.0)
+    impact = db.Column(db.Float, default=0.0)
+    resources = db.Column(db.Float, default=0.0)
+    complexity = db.Column(db.Float, default=0.0)
+    alignment = db.Column(db.Float, default=0.0)
+    priority = db.Column(db.Float, default=0.0)
+    order = db.Column(db.Integer, nullable=True, default=None)
+    is_daily = db.Column(db.Boolean, default=False)
+
+    materials = db.relationship('Material', secondary=task_material_association, back_populates='tasks')
+    consumables = db.relationship('Consumable', secondary=task_consumable_association, back_populates='tasks')
+    protections = db.relationship('Protection', secondary=task_protection_association, back_populates='tasks')
+
+    # Explicitly define the join conditions for prerequisites and dependents
+    prerequisites = db.relationship(
+        'Task', secondary=task_task_association,
+        primaryjoin=id == task_task_association.c.task_id,
+        secondaryjoin=id == task_task_association.c.prerequisite_task_id,
+        backref='dependents'
+    )
+
+    def __init__(self, name, project_id=None, is_done=False, due_date=None, planned_date=None, recurrence=0, time_required=0,
+                 time_required_unit='seconds', funding=0, benefits=0, time_to_sell=0, time_to_sell_unit='seconds', urgency=0,
+                 impact=0, resources=0, complexity=0, alignment=0, order=None):
+        self.name = name
+        self.project_id = project_id
+        self.is_done = is_done
+        self.due_date = due_date
+        self.planned_date = planned_date
+        self.recurrence = recurrence
+        self.time_required = time_required
+        self.time_required_unit = time_required_unit
+        self.funding = funding
+        self.benefits = benefits
+        self.time_to_sell = time_to_sell
+        self.time_to_sell_unit = time_to_sell_unit
+        self.urgency = urgency
+        self.impact = impact
+        self.resources = resources
+        self.complexity = complexity
+        self.alignment = alignment
+        self.order = order
+        self.is_daily = self.check_if_daily()
+
+    def check_if_daily(self):
+        today = date.today()
+        return (self.due_date and self.due_date >= today) or (self.planned_date and self.planned_date >= today)
+
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -50,53 +116,87 @@ class Project(db.Model):
     goal = db.Column(db.Text, default='')
     principle = db.Column(db.Text, default='')
     protocol = db.Column(db.Text, default='')
-    prerequisites = db.Column(db.Text, default='')
-    protections = db.Column(db.Text, default='')
-    materials = db.Column(db.Text, default='')
-    consumables = db.Column(db.Text, default='')
     time_required = db.Column(db.String(50), default='0')
     time_required_unit = db.Column(db.String(20), default='seconds')
     funding = db.Column(db.Float, default=0.0)
+    benefits = db.Column(db.Float, nullable=True, default=0)
     time_to_sell = db.Column(db.String(50), default='0')
     time_to_sell_unit = db.Column(db.String(20), default='seconds')
+    due_date = db.Column(db.Date, nullable=True, default=None)
+    planned_date = db.Column(db.Date, nullable=True, default=None)
+
+    # Priority attributes
+    urgency = db.Column(db.Float, default=0.0)
+    impact = db.Column(db.Float, default=0.0)
+    resources = db.Column(db.Float, default=0.0)
+    complexity = db.Column(db.Float, default=0.0)
+    alignment = db.Column(db.Float, default=0.0)
+    priority = db.Column(db.Float, default=0.0)
+
+    protections = db.relationship('Protection', secondary=project_protection_association, back_populates='projects')
+    materials = db.relationship('Material', secondary=project_material_association, back_populates='projects')
+    consumables = db.relationship('Consumable', secondary=project_consumable_association, back_populates='projects')
+    prerequisites = db.relationship('Project', secondary='project_prerequisite_association',
+                                    primaryjoin=id == project_prerequisite_association.c.project_id,
+                                    secondaryjoin=id == project_prerequisite_association.c.prerequisite_id,
+                                    backref='dependent_projects')
+
     tasks = db.relationship('Task', backref='project', lazy=True)
 
-    def calculate_priority(self):
-        return (self.urgency + self.impact + self.resources + self.complexity + self.alignment) / 5
+    def __init__(self, name, goal='', principle='', protocol='', time_required='0', time_required_unit='seconds', funding=0.0, benefits=0, time_to_sell='0', time_to_sell_unit='seconds', due_date=None, planned_date=None):
+        self.name = name
+        self.goal = goal
+        self.principle = principle
+        self.protocol = protocol
+        self.time_required = time_required
+        self.time_required_unit = time_required_unit
+        self.funding = funding
+        self.benefits = benefits
+        self.time_to_sell = time_to_sell
+        self.time_to_sell_unit = time_to_sell_unit
+        self.due_date = due_date
+        self.planned_date = planned_date
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'name': self.name,
-            'goal': self.goal,
-            'principle': self.principle,
-            'protocol': self.protocol,
-            'prerequisites': self.prerequisites,
-            'protections': self.protections,
-            'materials': self.materials,
-            'consumables': self.consumables,
-            'time_required': self.time_required,
-            'time_required_unit': self.time_required_unit,
-            'funding': self.funding,
-            'time_to_sell': self.time_to_sell,
-            'time_to_sell_unit': self.time_to_sell_unit,
-            'priority': self.calculate_priority()
-        }
+    def __repr__(self):
+        return f'<Project {self.name}>'
+
+
+
 class Protection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer, nullable=True, default=0)
+    tasks = db.relationship('Task', secondary=task_protection_association, back_populates='protections')
+    projects = db.relationship('Project', secondary=project_protection_association, back_populates='protections')
+
+    def __init__(self, name, quantity=None):
+        self.name = name
+        self.quantity = quantity if quantity is not None else 0
 
 class Material(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer, nullable=True, default=0)
+    tasks = db.relationship('Task', secondary=task_material_association, back_populates='materials')
+    projects = db.relationship('Project', secondary=project_material_association, back_populates='materials')
+
+    def __init__(self, name, quantity=None):
+        self.name = name
+        self.quantity = quantity if quantity is not None else 0
 
 class Consumable(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer, nullable=True, default=0)
+    tasks = db.relationship('Task', secondary=task_consumable_association, back_populates='consumables')
+    projects = db.relationship('Project', secondary=project_consumable_association, back_populates='consumables')
+
+    def __init__(self, name, quantity=None):
+        self.name = name
+        self.quantity = quantity if quantity is not None else 0
 
 class Funds(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Float, nullable=False)
+
+print("Models importé")

@@ -1,0 +1,8 @@
+recréer bd :
+Remove-Item -Force -Recurse migrations
+Remove-Item -Force instance/prorga.db
+"supprimer instance"
+mkdir instance
+flask db init
+flask db migrate -m "Initial migration."
+flask db upgrade

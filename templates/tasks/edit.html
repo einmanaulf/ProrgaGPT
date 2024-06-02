@@ -3,100 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <title>Modifier une tâche</title>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/static/styles.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 </head>
 <body>
-<!-- Menu de navigation -->
-<nav>
-    <ul>
-        <li><a href="/">Accueil</a></li>
-        <li>Tâches :</li>
+    <!-- Menu de navigation -->
+    <nav>
         <ul>
-            <li><a href="/tasks/list">Liste des tâches</a></li>
-            <li><a href="/tasks/create">Créer une tâche</a></li>
+            <li><a href="/">Accueil</a></li>
+            <li>Tâches :</li>
+            <ul>
+                <li><a href="/tasks/list">Liste des tâches</a></li>
+                <li><a href="/tasks/create">Créer une tâche</a></li>
+            </ul>
+            <li>Projets :</li>
+            <ul>
+                <li><a href="/projects/list">Liste des projets</a></li>
+                <li><a href="/projects/create">Créer un projet</a></li>
+            </ul>
+            <li>Protections :</li>
+            <ul>
+                <li><a href="/protections/list">Liste des protections</a></li>
+                <li><a href="/protections/create">Créer une protection</a></li>
+            </ul>
+            <li>Matériels :</li>
+            <ul>
+                <li><a href="/materials/list">Liste des matériels</a></li>
+                <li><a href="/materials/create">Créer un matériel</a></li>
+            </ul>
+            <li>Consommables :</li>
+            <ul>
+                <li><a href="/consumables/list">Liste des consommables</a></li>
+                <li><a href="/consumables/create">Créer un consommable</a></li>
+            </ul>
         </ul>
-        <li>Projets :</li>
-        <ul>
-            <li><a href="/projects/list">Liste des projets</a></li>
-            <li><a href="/projects/create">Créer un projet</a></li>
-        </ul>
-        <li>Protections :</li>
-        <ul>
-            <li><a href="/protections/list">Liste des protections</a></li>
-            <li><a href="/protections/create">Créer une protection</a></li>
-        </ul>
-        <li>Matériels :</li>
-        <ul>
-            <li><a href="/materials/list">Liste des matériels</a></li>
-            <li><a href="/materials/create">Créer un matériel</a></li>
-        </ul>
-        <li>Consommables :</li>
-        <ul>
-            <li><a href="/consumables/list">Liste des consommables</a></li>
-            <li><a href="/consumables/create">Créer un consommable</a></li>
-        </ul>
-    </ul>
-</nav>
+    </nav>
 
-<div class="container">
-    <h1>Modifier la tâche</h1>
-    <form action="/tasks/{{ task.id }}/edit" method="post">
-        <label for="name">Nom:</label>
-        <input type="text" id="name" name="name" value="{{ task.name }}" required>
-        <label for="planned_date">Date de réalisation:</label>
-        <input type="date" id="planned_date" name="planned_date" value="{{ task.planned_date }}">
-        <label for="due_date">Date d'échéance:</label>
-        <input type="date" id="due_date" name="due_date" value="{{ task.due_date }}">
-        <label for="recurrence">Récurrence:</label>
-        <input type="text" id="recurrence" name="recurrence" value="{{ task.recurrence }}">
-        <label for="protections">Protections:</label>
-        <input type="text" id="protections" name="protections" value="{{ task.protections }}">
-        <br>
+    <div class="container">
+        <h1>Modifier une tâche</h1>
+        <form action="{{ url_for('edit_task', id=task.id) }}" method="post">
+            <input type="text" name="name" value="{{ task.name }}" required>
+            <input type="date" name="due_date" value="{{ task.due_date }}">
+            <input type="date" name="planned_date" value="{{ task.planned_date }}">
+            <input type="number" name="time_required" value="{{ task.time_required }}">
+            <input type="text" name="time_required_unit" value="{{ task.time_required_unit }}">
+            <input type="number" step="0.01" name="funding" value="{{ task.funding }}">
+            <input type="number" step="0.01" name="benefits" value="{{ task.benefits }}">
+            <input type="number" name="time_to_sell" value="{{ task.time_to_sell }}">
+            <input type="text" name="time_to_sell_unit" value="{{ task.time_to_sell_unit }}">
+            <input type="number" name="urgency" value="{{ task.urgency }}">
+            <input type="number" name="impact" value="{{ task.impact }}">
+            <input type="number" name="resources" value="{{ task.resources }}">
+            <input type="number" name="complexity" value="{{ task.complexity }}">
+            <input type="number" name="alignment" value="{{ task.alignment }}">
+            <input type="number" name="order" value="{{ task.order }}">
 
-        <label for="materials">Matériels:</label>
-        <input type="text" id="materials" name="materials" value="{{ task.materials }}">
-        <br>
+            <h4>Matériaux nécessaires</h4>
+            <div id="materials">
+                {% for material in materials %}
+                <div>
+                    <input type="text" class="material-name" name="material_names[]" value="{{ material.name }}">
+                    <input type="number" name="material_quantities[]" value="{{ material.quantity }}">
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" onclick="addMaterialField()">Ajouter un autre matériel</button>
 
-        <label for="consumables">Consommables:</label>
-        <input type="text" id="consumables" name="consumables" value="{{ task.consumables }}">
-        <br>
+            <h4>Consommables nécessaires</h4>
+            <div id="consumables">
+                {% for consumable in consumables %}
+                <div>
+                    <input type="text" class="consumable-name" name="consumable_names[]" value="{{ consumable.name }}">
+                    <input type="number" name="consumable_quantities[]" value="{{ consumable.quantity }}">
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" onclick="addConsumableField()">Ajouter un autre consommable</button>
 
-        <label for="prerequisites">Prérequis:</label>
-        <input type="text" id="prerequisites" name="prerequisites" value="{{ task.prerequisites }}">
-        <br>
-        <label for="time_required">Temps requis:</label>
-        <input type="text" id="time_required" name="time_required" value="{{ task.time_required }}">
-        <select id="time_unit" name="time_unit">
-            <option value="seconds" {% if project.time_required_unit == 'seconds' %}selected{% endif %}>Secondes</option>
-            <option value="minutes" {% if project.time_required_unit == 'minutes' %}selected{% endif %}>Minutes</option>
-            <option value="hours" {% if project.time_required_unit == 'hours' %}selected{% endif %}>Heures</option>
-            <option value="days" {% if project.time_required_unit == 'days' %}selected{% endif %}>Jours</option>
-            <option value="weeks" {% if project.time_required_unit == 'weeks' %}selected{% endif %}>Semaines</option>
-            <option value="months" {% if project.time_required_unit == 'months' %}selected{% endif %}>Mois</option>
-            <option value="years" {% if project.time_required_unit == 'years' %}selected{% endif %}>Années</option>
-        </select><br>
-        <label for="funding">Fonds:</label>
-        <input type="number" id="funding" name="funding" value="{{ task.funding }}">
-        <label for="benefits">Bénéfices:</label>
-        <input type="number" id="benefits" name="benefits" value="{{ task.benefits }}">
-        <label for="time_to_sell">Temps pour vendre:</label>
-        <input type="text" id="time_to_sell" name="time_to_sell" value="{{ task.time_to_sell }}">
-        <select id="time_to_sell_unit" name="time_to_sell_unit">
-            <option value="seconds" {% if project.time_to_sell_unit == 'seconds' %}selected{% endif %}>Secondes</option>
-            <option value="minutes" {% if project.time_to_sell_unit == 'minutes' %}selected{% endif %}>Minutes</option>
-            <option value="hours" {% if project.time_to_sell_unit == 'hours' %}selected{% endif %}>Heures</option>
-            <option value="days" {% if project.time_to_sell_unit == 'days' %}selected{% endif %}>Jours</option>
-            <option value="weeks" {% if project.time_to_sell_unit == 'weeks' %}selected{% endif %}>Semaines</option>
-            <option value="months" {% if project.time_to_sell_unit == 'months' %}selected{% endif %}>Mois</option>
-            <option value="years" {% if project.time_to_sell_unit == 'years' %}selected{% endif %}>Années</option>
-        </select><br>
-        <button type="submit">Enregistrer les modifications</button>
-    </form>
-    <script>
-        $(document).ready(function() {
-            function setupAutocomplete(selector, url) {
+            <h4>Protections nécessaires</h4>
+            <div id="protections">
+                {% for protection in protections %}
+                <div>
+                    <input type="text" class="protection-name" name="protection_names[]" value="{{ protection.name }}">
+                    <input type="number" name="protection_quantities[]" value="{{ protection.quantity }}">
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" onclick="addProtectionField()">Ajouter une autre protection</button>
+
+            <h4>Prérequis</h4>
+            <div id="prerequisites">
+                {% for prerequisite in prerequisites %}
+                <div>
+                    <input type="text" class="prerequisite-name" name="prerequisite_names[]" value="{{ prerequisite.name }}">
+                    <select name="prerequisite_types[]">
+                        <option value="task" {% if prerequisite.type == 'task' %}selected{% endif %}>Tâche</option>
+                        <option value="project" {% if prerequisite.type == 'project' %}selected{% endif %}>Projet</option>
+                    </select>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" onclick="addPrerequisiteField()">Ajouter un autre prérequis</button>
+
+            <button type="submit">Enregistrer les modifications</button>
+        </form>
+
+        <script>
+            function addMaterialField() {
+                const materialsDiv = document.getElementById('materials');
+                const newMaterialDiv = document.createElement('div');
+                newMaterialDiv.innerHTML = `
+                    <input type="text" class="material-name" name="material_names[]" placeholder="Nom du matériel">
+                    <input type="number" name="material_quantities[]" placeholder="Quantité">
+                `;
+                materialsDiv.appendChild(newMaterialDiv);
+                setupAutocomplete(".material-name", "/autocomplete/materials", "#materials-tags");
+            }
+
+            function addConsumableField() {
+                const consumablesDiv = document.getElementById('consumables');
+                const newConsumableDiv = document.createElement('div');
+                newConsumableDiv.innerHTML = `
+                    <input type="text" class="consumable-name" name="consumable_names[]" placeholder="Nom du consommable">
+                    <input type="number" name="consumable_quantities[]" placeholder="Quantité">
+                `;
+                consumablesDiv.appendChild(newConsumableDiv);
+                setupAutocomplete(".consumable-name", "/autocomplete/consumables", "#consumables-tags");
+            }
+
+            function addProtectionField() {
+                const protectionsDiv = document.getElementById('protections');
+                const newProtectionDiv = document.createElement('div');
+                newProtectionDiv.innerHTML = `
+                    <input type="text" class="protection-name" name="protection_names[]" placeholder="Nom de la protection">
+                    <input type="number" name="protection_quantities[]" placeholder="Quantité">
+                `;
+                protectionsDiv.appendChild(newProtectionDiv);
+                setupAutocomplete(".protection-name", "/autocomplete/protections", "#protections-tags");
+            }
+
+            function addPrerequisiteField() {
+                const prerequisitesDiv = document.getElementById('prerequisites');
+                const newPrerequisiteDiv = document.createElement('div');
+                newPrerequisiteDiv.innerHTML = `
+                    <input type="text" class="prerequisite-name" name="prerequisite_names[]" placeholder="Nom du prérequis">
+                    <select name="prerequisite_types[]">
+                        <option value="task">Tâche</option>
+                        <option value="project">Projet</option>
+                    </select>
+                `;
+                prerequisitesDiv.appendChild(newPrerequisiteDiv);
+                setupAutocomplete(".prerequisite-name", "/autocomplete/prerequisites", "#prerequisites-tags");
+            }
+
+            function setupAutocomplete(selector, url, tagsContainer) {
                 $(selector).autocomplete({
                     source: function(request, response) {
                         $.ajax({
@@ -115,18 +177,36 @@
                     },
                     minLength: 2,
                     select: function(event, ui) {
-                        // Ajouter des traitements spécifiques ici si nécessaire
+                        addTag(tagsContainer, ui.item.value);
+                        $(selector).val('');
+                        return false;
                     }
                 });
+
+                $(selector).on('keydown', function(event) {
+                    if (event.key === 'Enter' && $(selector).val().trim() !== '') {
+                        addTag(tagsContainer, $(selector).val().trim());
+                        $(selector).val('');
+                        return false;
+                    }
+                });
+
+                function addTag(container, value) {
+                    const tag = $('<span class="tag">' + value + '<span class="remove-tag">x</span></span>');
+                    $(container).append(tag);
+                    tag.find('.remove-tag').on('click', function() {
+                        tag.remove();
+                    });
+                }
             }
 
-            setupAutocomplete("#protections", "/autocomplete/protections");
-            setupAutocomplete("#materials", "/autocomplete/materials");
-            setupAutocomplete("#consumables", "/autocomplete/consumables");
-            setupAutocomplete("#prerequisites", "/autocomplete/prerequisites");
-        });
-    </script>
-    <a href="/tasks/list">Retour à la liste des tâches</a>
-</div>
+            $(document).ready(function() {
+                setupAutocomplete(".material-name", "/autocomplete/materials", "#materials-tags");
+                setupAutocomplete(".consumable-name", "/autocomplete/consumables", "#consumables-tags");
+                setupAutocomplete(".protection-name", "/autocomplete/protections", "#protections-tags");
+                setupAutocomplete(".prerequisite-name", "/autocomplete/prerequisites", "#prerequisites-tags");
+            });
+        </script>
+    </div>
 </body>
 </html>

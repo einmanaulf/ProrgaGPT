@@ -3,65 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <title>Détails de la tâche</title>
-    <link rel="stylesheet" href="/static/main.js">
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-<!-- Menu de navigation -->
-        <nav>
-    <ul>
-        <li><a href="/">Accueil</a></li>
-        <li>Tâches :</li>
+    <!-- Menu de navigation -->
+    <nav>
         <ul>
-            <li><a href="/tasks/list">Liste des tâches</a></li>
-            <li><a href="/tasks/create">Créer une tâche</a></li>
+            <li><a href="/">Accueil</a></li>
+            <li>Tâches :</li>
+            <ul>
+                <li><a href="/tasks/list">Liste des tâches</a></li>
+                <li><a href="/tasks/create">Créer une tâche</a></li>
+            </ul>
+            <li>Projets :</li>
+            <ul>
+                <li><a href="/projects/list">Liste des projets</a></li>
+                <li><a href="/projects/create">Créer un projet</a></li>
+            </ul>
+            <li>Protections :</li>
+            <ul>
+                <li><a href="/protections/list">Liste des protections</a></li>
+                <li><a href="/protections/create">Créer une protection</a></li>
+            </ul>
+            <li>Matériels :</li>
+            <ul>
+                <li><a href="/materials/list">Liste des matériels</a></li>
+                <li><a href="/materials/create">Créer un matériel</a></li>
+            </ul>
+            <li>Consommables :</li>
+            <ul>
+                <li><a href="/consumables/list">Liste des consommables</a></li>
+                <li><a href="/consumables/create">Créer un consommable</a></li>
+            </ul>
         </ul>
-        <li>Projets :</li>
-        <ul>
-            <li><a href="/projects/list">Liste des projets</a></li>
-            <li><a href="/projects/create">Créer un projet</a></li>
-        </ul>
-        <li>Protections :</li>
-        <ul>
-            <li><a href="/protections/list">Liste des protections</a></li>
-            <li><a href="/protections/create">Créer une protection</a></li>
-        </ul>
-        <li>Matériels :</li>
-        <ul>
-            <li><a href="/materials/list">Liste des matériels</a></li>
-            <li><a href="/materials/create">Créer un matériel</a></li>
-        </ul>
-        <li>Consommables :</li>
-        <ul>
-            <li><a href="/consumables/list">Liste des consommables</a></li>
-            <li><a href="/consumables/create">Créer un consommable</a></li>
-        </ul>
-    </ul>
-</nav>
+    </nav>
 
     <div class="container">
         <h1>Détails de la tâche</h1>
-        <p><strong>Nom:</strong> {{ task.name }}</p>
-        <p><strong>Date de réalisation:</strong> {{ task.planned_date }}</p>
-        <p><strong>Date d'échéance:</strong> {{ task.due_date }}</p>
-        <p><strong>Récurrence:</strong> {{ task.recurrence }}</p>
-        <p><strong>Pré-requis:</strong> {{ task.prerequisites }}</p>
-        <p><strong>Protections:</strong> {{ task.protections }}</p>
-        <p><strong>Matériels:</strong> {{ task.materials }}</p>
-        <p><strong>Consommables:</strong> {{ task.consumables }}</p>
-        <p><strong>Temps requis:</strong> {{ task.time_required }}</p>
-        <p><strong>Fonds:</strong> {{ task.funding }}</p>
-        <p><strong>Bénéfices:</strong> {{ task.benefits }}</p>
-        <p><strong>Temps pour vendre:</strong> {{ task.time_to_sell }}</p>
-        <a href="/tasks/{{ task.id }}/edit">Modifier</a>
-        {% if task.is_done %}
-            <a href="{{ url_for('mark_task_undone', id=task.id) }}">Marquer comme non terminée</a>
-        {% else %}
-            <a href="{{ url_for('mark_task_done', id=task.id) }}">Marquer comme terminée</a>
-        {% endif %}
-        <form action="{{ url_for('delete_task', id=task.id) }}" method="post" style="display:inline;">
-            <button type="submit">Supprimer</button>
-        </form>
-        <a href="/tasks/list">Retour à la liste des tâches</a>
+        <h2>{{ task.name }}</h2>
+        <p><strong>Date d'échéance :</strong> {{ task.due_date }}</p>
+        <p><strong>Date de réalisation :</strong> {{ task.planned_date }}</p>
+        <p><strong>Temps nécessaire :</strong> {{ task.time_required }} {{ task.time_required_unit }}</p>
+        <p><strong>Fonds nécessaires :</strong> {{ task.funding }}</p>
+        <p><strong>Bénéfices :</strong> {{ task.benefits }}</p>
+        <p><strong>Temps de vente :</strong> {{ task.time_to_sell }} {{ task.time_to_sell_unit }}</p>
+        <p><strong>Urgence :</strong> {{ task.urgency }}</p>
+        <p><strong>Impact :</strong> {{ task.impact }}</p>
+        <p><strong>Ressources :</strong> {{ task.resources }}</p>
+        <p><strong>Complexité :</strong> {{ task.complexity }}</p>
+        <p><strong>Alignement :</strong> {{ task.alignment }}</p>
+        <p><strong>Ordre :</strong> {{ task.order }}</p>
+
+        <h3>Matériaux nécessaires</h3>
+        <ul>
+            {% for material in materials %}
+            <li>{{ material.name }}: {{ material.quantity }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Consommables nécessaires</h3>
+        <ul>
+            {% for consumable in consumables %}
+            <li>{{ consumable.name }}: {{ consumable.quantity }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Protections nécessaires</h3>
+        <ul>
+            {% for protection in protections %}
+            <li>{{ protection.name }}: {{ protection.quantity }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Prérequis</h3>
+        <ul>
+            {% for prerequisite in prerequisites %}
+            <li>{{ prerequisite.name }} ({{ prerequisite.type }})</li>
+            {% endfor %}
+        </ul>
+
+        <a href="{{ url_for('edit_task', id=task.id) }}">Modifier la tâche</a>
     </div>
 </body>
 </html>
