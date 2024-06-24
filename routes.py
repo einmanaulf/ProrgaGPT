@@ -89,7 +89,13 @@ def update_priorities(item):
     item.priority = round((item.urgency + item.impact + item.resources + (100 - item.complexity) + item.alignment) / 5, 2)
 
     db.session.commit()
-
+def check_and_create_resource(model, name):
+    resource = model.query.filter_by(name=name).first()
+    if not resource:
+        resource = model(name=name, quantity=0)
+        db.session.add(resource)
+        db.session.commit()
+    return resource
 def calculate_complexity(num_prerequisites, k=5):
     """
     Calcul de la complexité en utilisant une fonction logarithmique.
@@ -132,9 +138,15 @@ def get_available_consumables():
     """
     consumables = Consumable.query.all()
     return {consumable.name: consumable.quantity for consumable in consumables}
-
-
     db.session.commit()
+
+def check_and_create_resource(model, name, quantity_needed=1):
+    resource = model.query.filter_by(name=name).first()
+    if not resource:
+        resource = model(name=name, quantity=0)
+        db.session.add(resource)
+        db.session.commit()
+    return resource, quantity_needed
 @app.route('/')
 def index():
     logging.debug("Accès à la route /")
@@ -167,116 +179,73 @@ def create_task():
     if request.method == 'POST':
         try:
             name = request.form.get('name')
-            if not name:
-                raise ValueError("Le champ 'name' est obligatoire")
-
             due_date_str = request.form.get('due_date')
             planned_date_str = request.form.get('planned_date')
-
             due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date() if due_date_str else None
             planned_date = datetime.strptime(planned_date_str, '%Y-%m-%d').date() if planned_date_str else None
-
-            recurrence = request.form.get('recurrence')
-            time_required_str = request.form.get('time_required')
-            time_required_unit = request.form.get('time_required_unit', 'seconds')
-            funding_str = request.form.get('funding')
-            benefits_str = request.form.get('benefits')
-            time_to_sell_str = request.form.get('time_to_sell')
-            time_to_sell_unit = request.form.get('time_to_sell_unit', 'seconds')
-            urgency_str = request.form.get('urgency')
-            impact_str = request.form.get('impact')
-            resources_str = request.form.get('resources')
-            complexity_str = request.form.get('complexity')
-            alignment_str = request.form.get('alignment')
-            order_str = request.form.get('order')
-
-            time_required = float(time_required_str) if time_required_str else 0.0
-            funding = float(funding_str) if funding_str else 0.0
-            benefits = float(benefits_str) if benefits_str else 0.0
-            time_to_sell = float(time_to_sell_str) if time_to_sell_str else 0.0
-            urgency = float(urgency_str) if urgency_str else 0.0
-            impact = float(impact_str) if impact_str else 0.0
-            resources = float(resources_str) if resources_str else 0.0
-            complexity = float(complexity_str) if complexity_str else 0.0
-            alignment = float(alignment_str) if alignment_str else 0.0
-            order = int(order_str) if order_str else 0
 
             new_task = Task(
                 name=name,
                 due_date=due_date,
                 planned_date=planned_date,
-                recurrence=recurrence,
-                time_required=time_required,
-                time_required_unit=time_required_unit,
-                funding=funding,
-                benefits=benefits,
-                time_to_sell=time_to_sell,
-                time_to_sell_unit=time_to_sell_unit,
-                urgency=urgency,
-                impact=impact,
-                resources=resources,
-                complexity=complexity,
-                alignment=alignment,
-                order=order
+                recurrence=request.form.get('recurrence'),
+                time_required=float(request.form.get('time_required', 0.0)) if request.form.get('time_required') else 0.0,
+                time_required_unit=request.form.get('time_required_unit', 'seconds'),
+                funding=float(request.form.get('funding', 0.0)) if request.form.get('funding') else 0.0,
+                benefits=float(request.form.get('benefits', 0.0)) if request.form.get('benefits') else 0.0,
+                time_to_sell=float(request.form.get('time_to_sell', 0.0)) if request.form.get('time_to_sell') else 0.0,
+                time_to_sell_unit=request.form.get('time_to_sell_unit', 'seconds'),
+                urgency=float(request.form.get('urgency', 0.0)) if request.form.get('urgency') else 0.0,
+                impact=float(request.form.get('impact', 0.0)) if request.form.get('impact') else 0.0,
+                resources=float(request.form.get('resources', 0.0)) if request.form.get('resources') else 0.0,
+                complexity=float(request.form.get('complexity', 0.0)) if request.form.get('complexity') else 0.0,
+                alignment=float(request.form.get('alignment', 0.0)) if request.form.get('alignment') else 0.0,
+                order=int(request.form.get('order', 0)) if request.form.get('order') else 0
             )
 
             new_task.is_daily = new_task.check_if_daily()
-
             db.session.add(new_task)
             db.session.commit()
 
             # Ajout des ressources
             material_names = request.form.getlist('material_names[]')
             material_quantities = request.form.getlist('material_quantities[]')
-            for name, quantity in zip(material_names, material_quantities):
-                material = Material.query.filter_by(name=name).first()
-                if not material:
-                    material = Material(name=name, quantity=int(quantity))
-                    db.session.add(material)
-                    db.session.commit()
-                task_resource = TaskResource(task_id=new_task.id, resource_id=material.id, resource_type='material', quantity=int(quantity))
-                db.session.add(task_resource)
+            if material_names:
+                if not material_quantities:
+                    material_quantities = [1] * len(material_names)
+                for name, quantity in zip(material_names, material_quantities):
+                    if name.strip():
+                        material, quantity_needed = check_and_create_resource(Material, name, int(quantity) if quantity else 1)
+                        task_resource = TaskResource(task_id=new_task.id, resource_id=material.id, resource_type='Material', quantity=quantity_needed)
+                        db.session.add(task_resource)
 
             consumable_names = request.form.getlist('consumable_names[]')
             consumable_quantities = request.form.getlist('consumable_quantities[]')
-            for name, quantity in zip(consumable_names, consumable_quantities):
-                consumable = Consumable.query.filter_by(name=name).first()
-                if not consumable:
-                    consumable = Consumable(name=name, quantity=int(quantity))
-                    db.session.add(consumable)
-                    db.session.commit()
-                task_resource = TaskResource(task_id=new_task.id, resource_id=consumable.id, resource_type='consumable', quantity=int(quantity))
-                db.session.add(task_resource)
+            if consumable_names:
+                if not consumable_quantities:
+                    consumable_quantities = [1] * len(consumable_names)
+                for name, quantity in zip(consumable_names, consumable_quantities):
+                    if name.strip():
+                        consumable, quantity_needed = check_and_create_resource(Consumable, name, int(quantity) if quantity else 1)
+                        task_resource = TaskResource(task_id=new_task.id, resource_id=consumable.id, resource_type='Consumable', quantity=quantity_needed)
+                        db.session.add(task_resource)
 
             protection_names = request.form.getlist('protection_names[]')
             protection_quantities = request.form.getlist('protection_quantities[]')
-            for name, quantity in zip(protection_names, protection_quantities):
-                protection = Protection.query.filter_by(name=name).first()
-                if not protection:
-                    protection = Protection(name=name, quantity=int(quantity))
-                    db.session.add(protection)
-                    db.session.commit()
-                task_resource = TaskResource(task_id=new_task.id, resource_id=protection.id, resource_type='protection', quantity=int(quantity))
-                db.session.add(task_resource)
-
-            # Ajout des prérequis
-            prerequisite_names = request.form.getlist('prerequisite_names[]')
-            prerequisite_types = request.form.getlist('prerequisite_types[]')
-            for name, type_ in zip(prerequisite_names, prerequisite_types):
-                if type_ == 'task':
-                    prerequisite = Task.query.filter_by(name=name).first()
-                elif type_ == 'project':
-                    prerequisite = Project.query.filter_by(name=name).first()
-                if prerequisite:
-                    task_prerequisite = TaskPrerequisite(task_id=new_task.id, prerequisite_id=prerequisite.id, prerequisite_type=type_)
-                    db.session.add(task_prerequisite)
+            if protection_names:
+                if not protection_quantities:
+                    protection_quantities = [1] * len(protection_names)
+                for name, quantity in zip(protection_names, protection_quantities):
+                    if name.strip():
+                        protection, quantity_needed = check_and_create_resource(Protection, name, int(quantity) if quantity else 1)
+                        task_resource = TaskResource(task_id=new_task.id, resource_id=protection.id, resource_type='Protection', quantity=quantity_needed)
+                        db.session.add(task_resource)
 
             db.session.commit()
             return redirect(url_for('index'))
         except ValueError as e:
             logging.error(f"Erreur de conversion des données : {str(e)}")
             return render_template('tasks/create.html', error=str(e))
-
     return render_template('tasks/create.html')
 
 
@@ -308,12 +277,12 @@ def edit_task(id):
             task.planned_date = datetime.strptime(planned_date_str, '%Y-%m-%d').date() if planned_date_str else None
 
             task.recurrence = request.form.get('recurrence', task.recurrence)
-            task.time_required = request.form.get('time_required', task.time_required)
-            task.time_required_unit = request.form.get('time_required_unit', 'seconds')
+            task.time_required = float(request.form.get('time_required', 0)) if request.form.get('time_required') else task.time_required
+            task.time_required_unit = request.form.get('time_required_unit', task.time_required_unit)
             task.funding = float(request.form.get('funding', 0)) if request.form.get('funding') else task.funding
             task.benefits = float(request.form.get('benefits', 0)) if request.form.get('benefits') else task.benefits
-            task.time_to_sell = request.form.get('time_to_sell', task.time_to_sell)
-            task.time_to_sell_unit = request.form.get('time_to_sell_unit', 'seconds')
+            task.time_to_sell = float(request.form.get('time_to_sell', 0)) if request.form.get('time_to_sell') else task.time_to_sell
+            task.time_to_sell_unit = request.form.get('time_to_sell_unit', task.time_to_sell_unit)
             task.urgency = float(request.form.get('urgency', 0)) if request.form.get('urgency') else task.urgency
             task.impact = float(request.form.get('impact', 0)) if request.form.get('impact') else task.impact
             task.resources = float(request.form.get('resources', 0)) if request.form.get('resources') else task.resources
@@ -327,62 +296,47 @@ def edit_task(id):
 
             # Mise à jour des ressources
             db.session.query(TaskResource).filter_by(task_id=task.id).delete()
+
             material_names = request.form.getlist('material_names[]')
             material_quantities = request.form.getlist('material_quantities[]')
-            for name, quantity in zip(material_names, material_quantities):
-                material = Material.query.filter_by(name=name).first()
-                if not material:
-                    material = Material(name=name, quantity=int(quantity))
-                    db.session.add(material)
-                    db.session.commit()
-                task_resource = TaskResource(task_id=task.id, resource_id=material.id, resource_type='material', quantity=int(quantity))
-                db.session.add(task_resource)
+            if material_names:
+                if not material_quantities:
+                    material_quantities = [1] * len(material_names)
+                for name, quantity in zip(material_names, material_quantities):
+                    if name.strip():
+                        material, quantity_needed = check_and_create_resource(Material, name, int(quantity) if quantity else 1)
+                        task_resource = TaskResource(task_id=task.id, resource_id=material.id, resource_type='Material', quantity=quantity_needed)
+                        db.session.add(task_resource)
 
             consumable_names = request.form.getlist('consumable_names[]')
             consumable_quantities = request.form.getlist('consumable_quantities[]')
-            for name, quantity in zip(consumable_names, consumable_quantities):
-                consumable = Consumable.query.filter_by(name=name).first()
-                if not consumable:
-                    consumable = Consumable(name=name, quantity=int(quantity))
-                    db.session.add(consumable)
-                    db.session.commit()
-                task_resource = TaskResource(task_id=task.id, resource_id=consumable.id, resource_type='consumable', quantity=int(quantity))
-                db.session.add(task_resource)
+            if consumable_names:
+                if not consumable_quantities:
+                    consumable_quantities = [1] * len(consumable_names)
+                for name, quantity in zip(consumable_names, consumable_quantities):
+                    if name.strip():
+                        consumable, quantity_needed = check_and_create_resource(Consumable, name, int(quantity) if quantity else 1)
+                        task_resource = TaskResource(task_id=task.id, resource_id=consumable.id, resource_type='Consumable', quantity=quantity_needed)
+                        db.session.add(task_resource)
 
             protection_names = request.form.getlist('protection_names[]')
             protection_quantities = request.form.getlist('protection_quantities[]')
-            for name, quantity in zip(protection_names, protection_quantities):
-                protection = Protection.query.filter_by(name=name).first()
-                if not protection:
-                    protection = Protection(name=name, quantity=int(quantity))
-                    db.session.add(protection)
-                    db.session.commit()
-                task_resource = TaskResource(task_id=task.id, resource_id=protection.id, resource_type='protection', quantity=int(quantity))
-                db.session.add(task_resource)
-
-            # Mise à jour des prérequis
-            db.session.query(TaskPrerequisite).filter_by(task_id=task.id).delete()
-            prerequisite_names = request.form.getlist('prerequisite_names[]')
-            prerequisite_types = request.form.getlist('prerequisite_types[]')
-            for name, type_ in zip(prerequisite_names, prerequisite_types):
-                if type_ == 'task':
-                    prerequisite = Task.query.filter_by(name=name).first()
-                elif type_ == 'project':
-                    prerequisite = Project.query.filter_by(name=name).first()
-                if prerequisite:
-                    task_prerequisite = TaskPrerequisite(task_id=task.id, prerequisite_id=prerequisite.id, prerequisite_type=type_)
-                    db.session.add(task_prerequisite)
+            if protection_names:
+                if not protection_quantities:
+                    protection_quantities = [1] * len(protection_names)
+                for name, quantity in zip(protection_names, protection_quantities):
+                    if name.strip():
+                        protection, quantity_needed = check_and_create_resource(Protection, name, int(quantity) if quantity else 1)
+                        task_resource = TaskResource(task_id=task.id, resource_id=protection.id, resource_type='Protection', quantity=quantity_needed)
+                        db.session.add(task_resource)
 
             db.session.commit()
             return redirect(url_for('index'))
         except ValueError as e:
             logging.error(f"Erreur de conversion des données : {str(e)}")
-            return redirect(url_for('edit_task', id=id))
-    materials = db.session.query(Material).join(TaskResource, TaskResource.resource_id == Material.id).filter(TaskResource.task_id == id, TaskResource.resource_type == 'material').all()
-    consumables = db.session.query(Consumable).join(TaskResource, TaskResource.resource_id == Consumable.id).filter(TaskResource.task_id == id, TaskResource.resource_type == 'consumable').all()
-    protections = db.session.query(Protection).join(TaskResource, TaskResource.resource_id == Protection.id).filter(TaskResource.task_id == id, TaskResource.resource_type == 'protection').all()
-    prerequisites = db.session.query(TaskPrerequisite).filter(TaskPrerequisite.task_id == id).all()
-    return render_template('tasks/edit.html', task=task, materials=materials, consumables=consumables, protections=protections, prerequisites=prerequisites)
+            return render_template('tasks/edit.html', task=task, error=str(e))
+    return render_template('tasks/edit.html', task=task)
+
 
 @app.route('/tasks/<int:id>/delete', methods=['POST'])
 def delete_task(id):
@@ -433,57 +387,46 @@ def create_project():
             time_to_sell_unit=time_to_sell_unit, due_date=due_date, planned_date=planned_date
         )
 
-        # Ajout des protections
-        protections = request.form.getlist('protections')
-        for protection_name in protections:
-            if protection_name.strip():  # Filtre les champs vides
-                protection = Protection.query.filter_by(name=protection_name).first()
-                if not protection:
-                    protection = Protection(name=protection_name, quantity=0)
-                    db.session.add(protection)
-                    db.session.commit()  # Commit to ensure protection ID is available
-                logging.debug(f"Ajout de la protection: {protection_name}")
-                new_project.protections.append(protection)
-
-        # Ajout des matériels
-        materials = request.form.getlist('materials')
-        for material_name in materials:
-            if material_name.strip():  # Filtre les champs vides
-                material = Material.query.filter_by(name=material_name).first()
-                if not material:
-                    material = Material(name=material_name, quantity=0)
-                    db.session.add(material)
-                    db.session.commit()  # Commit to ensure material ID is available
-                logging.debug(f"Ajout du matériel: {material_name}")
-                new_project.materials.append(material)
-
-        # Ajout des consommables
-        consumables = request.form.getlist('consumables')
-        for consumable_name in consumables:
-            if consumable_name.strip():  # Filtre les champs vides
-                consumable = Consumable.query.filter_by(name=consumable_name).first()
-                if not consumable:
-                    consumable = Consumable(name=consumable_name, quantity=0)
-                    db.session.add(consumable)
-                    db.session.commit()  # Commit to ensure consumable ID is available
-                logging.debug(f"Ajout du consommable: {consumable_name}")
-                new_project.consumables.append(consumable)
-
-        # Ajout des prérequis
-        prerequisites = request.form.getlist('prerequisites')
-        for prerequisite_name in prerequisites:
-            if prerequisite_name.strip():  # Filtre les champs vides
-                prerequisite = Project.query.filter_by(name=prerequisite_name).first()
-                if prerequisite:
-                    new_project.prerequisites.append(prerequisite)
-
         db.session.add(new_project)
         db.session.commit()
-        update_priorities(new_project)
-        return redirect(url_for('list_projects'))  # Corrigez l'URL de redirection
+
+        # Ajout des ressources
+        material_names = request.form.getlist('material_names[]')
+        material_quantities = request.form.getlist('material_quantities[]')
+        if material_names:
+            if not material_quantities:
+                material_quantities = [1] * len(material_names)
+            for name, quantity in zip(material_names, material_quantities):
+                if name.strip():
+                    material, quantity_needed = check_and_create_resource(Material, name, int(quantity) if quantity else 1)
+                    project_resource = ProjectResource(project_id=new_project.id, resource_id=material.id, resource_type='Material', quantity=quantity_needed)
+                    db.session.add(project_resource)
+
+        consumable_names = request.form.getlist('consumable_names[]')
+        consumable_quantities = request.form.getlist('consumable_quantities[]')
+        if consumable_names:
+            if not consumable_quantities:
+                consumable_quantities = [1] * len(consumable_names)
+            for name, quantity in zip(consumable_names, consumable_quantities):
+                if name.strip():
+                    consumable, quantity_needed = check_and_create_resource(Consumable, name, int(quantity) if quantity else 1)
+                    project_resource = ProjectResource(project_id=new_project.id, resource_id=consumable.id, resource_type='Consumable', quantity=quantity_needed)
+                    db.session.add(project_resource)
+
+        protection_names = request.form.getlist('protection_names[]')
+        protection_quantities = request.form.getlist('protection_quantities[]')
+        if protection_names:
+            if not protection_quantities:
+                protection_quantities = [1] * len(protection_names)
+            for name, quantity in zip(protection_names, protection_quantities):
+                if name.strip():
+                    protection, quantity_needed = check_and_create_resource(Protection, name, int(quantity) if quantity else 1)
+                    project_resource = ProjectResource(project_id=new_project.id, resource_id=protection.id, resource_type='Protection', quantity=quantity_needed)
+                    db.session.add(project_resource)
+
+        db.session.commit()
+        return redirect(url_for('list_projects'))
     return render_template('projects/create.html')
-
-
 
 @app.route('/projects/list', methods=['GET'])
 def list_projects():
@@ -522,10 +465,6 @@ def edit_project(id):
         project.goal = request.form.get('goal', project.goal)
         project.principle = request.form.get('principle', project.principle)
         project.protocol = request.form.get('protocol', project.protocol)
-        project.prerequisites = request.form.get('prerequisites', project.prerequisites)
-        project.protections = request.form.get('protections', project.protections)
-        project.materials = request.form.get('materials', project.materials)
-        project.consumables = request.form.get('consumables', project.consumables)
         project.time_required = request.form.get('time_required', project.time_required)
         project.time_required_unit = request.form.get('time_required_unit', project.time_required_unit)
         project.funding = request.form.get('funding', project.funding)
@@ -539,22 +478,46 @@ def edit_project(id):
 
         db.session.commit()
 
-        # Ajout des tâches
-        tasks = request.form.getlist('tasks')
-        for task_name in tasks:
-            new_task = Task(
-                name=task_name,
-                project_id=project.id,
-                planned_date=date.today()
-            )
-            db.session.add(new_task)
+        # Mise à jour des ressources
+        db.session.query(ProjectResource).filter_by(project_id=project.id).delete()
+
+        material_names = request.form.getlist('material_names[]')
+        material_quantities = request.form.getlist('material_quantities[]')
+        if material_names:
+            if not material_quantities:
+                material_quantities = [1] * len(material_names)
+            for name, quantity in zip(material_names, material_quantities):
+                if name.strip():
+                    material, quantity_needed = check_and_create_resource(Material, name, int(quantity) if quantity else 1)
+                    project_resource = ProjectResource(project_id=project.id, resource_id=material.id, resource_type='Material', quantity=quantity_needed)
+                    db.session.add(project_resource)
+
+        consumable_names = request.form.getlist('consumable_names[]')
+        consumable_quantities = request.form.getlist('consumable_quantities[]')
+        if consumable_names:
+            if not consumable_quantities:
+                consumable_quantities = [1] * len(consumable_names)
+            for name, quantity in zip(consumable_names, consumable_quantities):
+                if name.strip():
+                    consumable, quantity_needed = check_and_create_resource(Consumable, name, int(quantity) if quantity else 1)
+                    project_resource = ProjectResource(project_id=project.id, resource_id=consumable.id, resource_type='Consumable', quantity=quantity_needed)
+                    db.session.add(project_resource)
+
+        protection_names = request.form.getlist('protection_names[]')
+        protection_quantities = request.form.getlist('protection_quantities[]')
+        if protection_names:
+            if not protection_quantities:
+                protection_quantities = [1] * len(protection_names)
+            for name, quantity in zip(protection_names, protection_quantities):
+                if name.strip():
+                    protection, quantity_needed = check_and_create_resource(Protection, name, int(quantity) if quantity else 1)
+                    project_resource = ProjectResource(project_id=project.id, resource_id=protection.id, resource_type='Protection', quantity=quantity_needed)
+                    db.session.add(project_resource)
 
         db.session.commit()
-
-        update_priorities(project)
-
-        return redirect(url_for('project_details', id=project.id))
+        return redirect(url_for('list_projects'))
     return render_template('projects/edit.html', project=project)
+
 
 @app.route('/projects/<int:id>/delete', methods=['POST'])
 def delete_project(id):

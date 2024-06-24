@@ -58,6 +58,35 @@
             <li><strong>Alignement :</strong> {{ project.alignment }}%</li>
             <li><strong>Priorité totale :</strong> {{ project.priority }}%</li>
         </ul>
+        <!-- Matériaux -->
+        <h3>Materials</h3>
+        <ul>
+            {% for resource in project.project_resources %}
+                {% if resource.resource_type == 'Material' %}
+                    <li>{{ resource.material.name }}: {{ resource.quantity }}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+
+        <!-- Consommables -->
+        <h3>Consumables</h3>
+        <ul>
+            {% for resource in project.project_resources %}
+                {% if resource.resource_type == 'Consumable' %}
+                    <li>{{ resource.consumable.name }}: {{ resource.quantity }}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+
+        <!-- Protections -->
+        <h3>Protections</h3>
+        <ul>
+            {% for resource in project.project_resources %}
+                {% if resource.resource_type == 'Protection' %}
+                    <li>{{ resource.protection.name }}: {{ resource.quantity }}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
         <h3>Tâches</h3>
         <ul>
             {% for task in project.tasks %}

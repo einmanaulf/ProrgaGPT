@@ -128,130 +128,86 @@
                 <option value="weeks">Semaines</option>
                 <option value="months">Mois</option>
                 <option value="years">Années</option>
-            </select><br>
+            </select><br><br>
 
-            <label for="protections">Protections:</label>
-            <input type="text" class="resource-input" data-list="protections-list" name="protections_input">
-            <ul id="protections-list"></ul><br>
-
-            <label for="materials">Matériaux:</label>
-            <input type="text" class="resource-input" data-list="materials-list" name="materials_input">
-            <ul id="materials-list"></ul><br>
-
-            <label for="consumables">Consommables:</label>
-            <input type="text" class="resource-input" data-list="consumables-list" name="consumables_input">
-            <ul id="consumables-list"></ul><br>
-
-            <h4>Prérequis</h4>
-            <div id="prerequisites">
-                <input type="text" class="prerequisite-name" name="prerequisite_names[]" placeholder="Nom du prérequis">
-                <select name="prerequisite_types[]">
-                    <option value="task">Tâche</option>
-                    <option value="project">Projet</option>
-                </select>
+            <div id="materials">
+                <label for="material_names">Materials:</label>
+                <div class="resource">
+                    <input type="text" name="material_names[]" placeholder="Material name">
+                    <input type="number" name="material_quantities[]" placeholder="Quantity" value="1">
+                </div>
             </div>
-            <button type="button" onclick="addPrerequisiteField()">Ajouter un autre prérequis</button>
+            <button type="button" onclick="addMaterial()">Ajouter un autre matériel</button><br><br>
 
+            <div id="consumables">
+                <label for="consumable_names">Consumables:</label>
+                <div class="resource">
+                    <input type="text" name="consumable_names[]" placeholder="Consumable name">
+                    <input type="number" name="consumable_quantities[]" placeholder="Quantity" value="1">
+                </div>
+            </div>
+            <button type="button" onclick="addConsumable()">Ajouter un autre consommable</button><br><br>
 
-            <button type="submit">Créer la tâche</button>
+            <div id="protections">
+                <label for="protection_names">Protections:</label>
+                <div class="resource">
+                    <input type="text" name="protection_names[]" placeholder="Protection name">
+                    <input type="number" name="protection_quantities[]" placeholder="Quantity" value="1">
+                </div>
+            </div>
+            <button type="button" onclick="addProtection()">Ajouter une autre protection</button><br><br><br>
+
+            <!-- Sélection des prérequis (tâches et projets) -->
+            <label for="prerequisite_ids">Prerequisites (Tasks):</label>
+            <select multiple name="prerequisite_task_ids[]">
+                {% for task in tasks %}
+                    <option value="{{ task.id }}">{{ task.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="prerequisite_project_ids">Prerequisites (Projects):</label>
+            <select multiple name="prerequisite_project_ids[]">
+                {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.name }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Créer la tache</button>
         </form>
 
         <script>
-            function addMaterialField() {
-                const materialsDiv = document.getElementById('materials');
-                const newMaterialDiv = document.createElement('div');
-                newMaterialDiv.innerHTML = `
-                    <input type="text" class="material-name" name="material_names[]" placeholder="Nom du matériel">
-                    <input type="number" name="material_quantities[]" placeholder="Quantité">
-                `;
-                materialsDiv.appendChild(newMaterialDiv);
-                setupAutocomplete(".material-name", "/autocomplete/materials", "#materials-tags");
-            }
+        function addMaterial() {
+            const materialsDiv = document.getElementById('materials');
+            const newMaterial = document.createElement('div');
+            newMaterial.className = 'resource';
+            newMaterial.innerHTML = `
+                <input type="text" name="material_names[]" placeholder="Material name">
+                <input type="number" name="material_quantities[]" placeholder="Quantity" value="1">
+            `;
+            materialsDiv.appendChild(newMaterial);
+        }
 
-            function addConsumableField() {
-                const consumablesDiv = document.getElementById('consumables');
-                const newConsumableDiv = document.createElement('div');
-                newConsumableDiv.innerHTML = `
-                    <input type="text" class="consumable-name" name="consumable_names[]" placeholder="Nom du consommable">
-                    <input type="number" name="consumable_quantities[]" placeholder="Quantité">
-                `;
-                consumablesDiv.appendChild(newConsumableDiv);
-                setupAutocomplete(".consumable-name", "/autocomplete/consumables", "#consumables-tags");
-            }
+        function addConsumable() {
+            const consumablesDiv = document.getElementById('consumables');
+            const newConsumable = document.createElement('div');
+            newConsumable.className = 'resource';
+            newConsumable.innerHTML = `
+                <input type="text" name="consumable_names[]" placeholder="Consumable name">
+                <input type="number" name="consumable_quantities[]" placeholder="Quantity" value="1">
+            `;
+            consumablesDiv.appendChild(newConsumable);
+        }
 
-            function addProtectionField() {
-                const protectionsDiv = document.getElementById('protections');
-                const newProtectionDiv = document.createElement('div');
-                newProtectionDiv.innerHTML = `
-                    <input type="text" class="protection-name" name="protection_names[]" placeholder="Nom de la protection">
-                    <input type="number" name="protection_quantities[]" placeholder="Quantité">
-                `;
-                protectionsDiv.appendChild(newProtectionDiv);
-                setupAutocomplete(".protection-name", "/autocomplete/protections", "#protections-tags");
-            }
-
-            function addPrerequisiteField() {
-                const prerequisitesDiv = document.getElementById('prerequisites');
-                const newPrerequisiteDiv = document.createElement('div');
-                newPrerequisiteDiv.innerHTML = `
-                    <input type="text" class="prerequisite-name" name="prerequisite_names[]" placeholder="Nom du prérequis">
-                    <select name="prerequisite_types[]">
-                        <option value="task">Tâche</option>
-                        <option value="project">Projet</option>
-                    </select>
-                `;
-                prerequisitesDiv.appendChild(newPrerequisiteDiv);
-                setupAutocomplete(".prerequisite-name", "/autocomplete/prerequisites", "#prerequisites-tags");
-            }
-
-            function setupAutocomplete(selector, url, tagsContainer) {
-                $(selector).autocomplete({
-                    source: function(request, response) {
-                        $.ajax({
-                            url: url,
-                            dataType: "json",
-                            data: { query: request.term },
-                            success: function(data) {
-                                response($.map(data, function(item) {
-                                    return {
-                                        label: item.name,
-                                        value: item.name
-                                    };
-                                }));
-                            }
-                        });
-                    },
-                    minLength: 2,
-                    select: function(event, ui) {
-                        addTag(tagsContainer, ui.item.value);
-                        $(selector).val('');
-                        return false;
-                    }
-                });
-
-                $(selector).on('keydown', function(event) {
-                    if (event.key === 'Enter' && $(selector).val().trim() !== '') {
-                        addTag(tagsContainer, $(selector).val().trim());
-                        $(selector).val('');
-                        return false;
-                    }
-                });
-
-                function addTag(container, value) {
-                    const tag = $('<span class="tag">' + value + '<span class="remove-tag">x</span></span>');
-                    $(container).append(tag);
-                    tag.find('.remove-tag').on('click', function() {
-                        tag.remove();
-                    });
-                }
-            }
-
-            $(document).ready(function() {
-                setupAutocomplete(".material-name", "/autocomplete/materials", "#materials-tags");
-                setupAutocomplete(".consumable-name", "/autocomplete/consumables", "#consumables-tags");
-                setupAutocomplete(".protection-name", "/autocomplete/protections", "#protections-tags");
-                setupAutocomplete(".prerequisite-name", "/autocomplete/prerequisites", "#prerequisites-tags");
-            });
+        function addProtection() {
+            const protectionsDiv = document.getElementById('protections');
+            const newProtection = document.createElement('div');
+            newProtection.className = 'resource';
+            newProtection.innerHTML = `
+                <input type="text" name="protection_names[]" placeholder="Protection name">
+                <input type="number" name="protection_quantities[]" placeholder="Quantity" value="1">
+            `;
+            protectionsDiv.appendChild(newProtection);
+        }
         </script>
     </div>
 </body>

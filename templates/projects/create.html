@@ -112,21 +112,35 @@
             <label for="protocol">Protocole:</label>
             <input type="text" id="protocol" name="protocol"><br>
 
-            <label for="protections">Protections:</label>
-            <input type="text" class="resource-input" data-list="protections-list" name="protections_input">
-            <ul id="protections-list"></ul><br>
+            <!-- Matériaux -->
+            <div id="materials">
+                <label for="material_names">Materials:</label>
+                <div class="resource">
+                    <input type="text" name="material_names[]" placeholder="Material name">
+                    <input type="number" name="material_quantities[]" placeholder="Quantity" value="1">
+                </div>
+            </div>
+            <button type="button" onclick="addMaterial()">Add Another Material</button>
 
-            <label for="materials">Matériaux:</label>
-            <input type="text" class="resource-input" data-list="materials-list" name="materials_input">
-            <ul id="materials-list"></ul><br>
+            <!-- Consommables -->
+            <div id="consumables">
+                <label for="consumable_names">Consumables:</label>
+                <div class="resource">
+                    <input type="text" name="consumable_names[]" placeholder="Consumable name">
+                    <input type="number" name="consumable_quantities[]" placeholder="Quantity" value="1">
+                </div>
+            </div>
+            <button type="button" onclick="addConsumable()">Add Another Consumable</button>
 
-            <label for="consumables">Consommables:</label>
-            <input type="text" class="resource-input" data-list="consumables-list" name="consumables_input">
-            <ul id="consumables-list"></ul><br>
-
-            <label for="prerequisites">Prérequis:</label>
-            <input type="text" class="resource-input" data-list="prerequisites-list" name="prerequisites_input">
-            <ul id="prerequisites-list"></ul><br>
+            <!-- Protections -->
+            <div id="protections">
+                <label for="protection_names">Protections:</label>
+                <div class="resource">
+                    <input type="text" name="protection_names[]" placeholder="Protection name">
+                    <input type="number" name="protection_quantities[]" placeholder="Quantity" value="1">
+                </div>
+            </div>
+            <button type="button" onclick="addProtection()">Add Another Protection</button>
 
             <label for="time_required">Temps requis:</label>
             <input type="number" id="time_required" name="time_required">
@@ -166,9 +180,58 @@
             <label for="planned_date">Date de réalisation:</label>
             <input type="date" id="planned_date" name="planned_date"><br>
 
+            <!-- Sélection des prérequis (projets et tâches) -->
+            <label for="prerequisite_project_ids">Prerequisites (Projects):</label>
+            <select multiple name="prerequisite_project_ids[]">
+                {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="prerequisite_task_ids">Prerequisites (Tasks):</label>
+            <select multiple name="prerequisite_task_ids[]">
+                {% for task in tasks %}
+                    <option value="{{ task.id }}">{{ task.name }}</option>
+                {% endfor %}
+            </select>
+
             <button type="submit">Créer le projet</button>
         </form>
         <a href="/projects/list">Retour à la liste des projets</a>
     </div>
+    <script>
+        function addMaterial() {
+            const materialsDiv = document.getElementById('materials');
+            const newMaterial = document.createElement('div');
+            newMaterial.className = 'resource';
+            newMaterial.innerHTML = `
+                <input type="text" name="material_names[]" placeholder="Material name">
+                <input type="number" name="material_quantities[]" placeholder="Quantity" value="1">
+            `;
+            materialsDiv.appendChild(newMaterial);
+        }
+
+        function addConsumable() {
+            const consumablesDiv = document.getElementById('consumables');
+            const newConsumable = document.createElement('div');
+            newConsumable.className = 'resource';
+            newConsumable.innerHTML = `
+                <input type="text" name="consumable_names[]" placeholder="Consumable name">
+                <input type="number" name="consumable_quantities[]" placeholder="Quantity" value="1">
+            `;
+            consumablesDiv.appendChild(newConsumable);
+        }
+
+        function addProtection() {
+            const protectionsDiv = document.getElementById('protections');
+            const newProtection = document.createElement('div');
+            newProtection.className = 'resource';
+            newProtection.innerHTML = `
+                <input type="text" name="protection_names[]" placeholder="Protection name">
+                <input type="number" name="protection_quantities[]" placeholder="Quantity" value="1">
+            `;
+            protectionsDiv.appendChild(newProtection);
+        }
+    </script>
 </body>
 </html>

@@ -56,22 +56,28 @@
 
         <h3>Matériaux nécessaires</h3>
         <ul>
-            {% for material in materials %}
-            <li>{{ material.name }}: {{ material.quantity }}</li>
+            {% for resource in task.task_resources %}
+                {% if resource.resource_type == 'Material' %}
+                    <li>{{ resource.material.name }}: {{ resource.quantity }}</li>
+                {% endif %}
             {% endfor %}
         </ul>
 
         <h3>Consommables nécessaires</h3>
         <ul>
-            {% for consumable in consumables %}
-            <li>{{ consumable.name }}: {{ consumable.quantity }}</li>
+            {% for resource in task.task_resources %}
+                {% if resource.resource_type == 'Consumable' %}
+                    <li>{{ resource.consumable.name }}: {{ resource.quantity }}</li>
+                {% endif %}
             {% endfor %}
         </ul>
 
         <h3>Protections nécessaires</h3>
         <ul>
-            {% for protection in protections %}
-            <li>{{ protection.name }}: {{ protection.quantity }}</li>
+            {% for resource in task.task_resources %}
+                {% if resource.resource_type == 'Protection' %}
+                    <li>{{ resource.protection.name }}: {{ resource.quantity }}</li>
+                {% endif %}
             {% endfor %}
         </ul>
 
