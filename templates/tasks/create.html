@@ -48,10 +48,26 @@
             <input type="date" name="due_date" placeholder="Date d'échéance">
             <input type="date" name="planned_date" placeholder="Date de réalisation">
             <input type="number" name="time_required" placeholder="Temps nécessaire">
-            <input type="text" name="time_required_unit" placeholder="Unité de temps">
+            <select id="time_required_unit" name="time_required_unit">
+                <option value="seconds">Secondes</option>
+                <option value="minutes">Minutes</option>
+                <option value="hours">Heures</option>
+                <option value="days">Jours</option>
+                <option value="weeks">Semaines</option>
+                <option value="months">Mois</option>
+                <option value="years">Années</option>
+            </select>
             <input type="number" step="0.01" name="funding" placeholder="Fonds nécessaires">
             <input type="number" step="0.01" name="benefits" placeholder="Bénéfices">
-            <input type="number" name="time_to_sell" placeholder="Temps de vente">
+            <select id="time_to_sell_unit" name="time_to_sell_unit">
+                <option value="seconds">Secondes</option>
+                <option value="minutes">Minutes</option>
+                <option value="hours">Heures</option>
+                <option value="days">Jours</option>
+                <option value="weeks">Semaines</option>
+                <option value="months">Mois</option>
+                <option value="years">Années</option>
+            </select>
             <input type="text" name="time_to_sell_unit" placeholder="Unité de temps de vente">
             <input type="number" name="order" placeholder="Ordre">
 
