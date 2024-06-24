@@ -51,6 +51,7 @@
                 <tr>
                     <th><a href="?sort_by=name&direction={{ 'desc' if sort_by == 'name' and direction == 'asc' else 'asc' }}">Nom</a></th>
                     <th><a href="?sort_by=project&direction={{ 'desc' if sort_by == 'project' and direction == 'asc' else 'asc' }}">Projet</a></th>
+                    <th><a href="?sort_by=priority&direction={{ 'desc' if sort_by == 'priority' and direction == 'asc' else 'asc' }}">Priorité</a></th>
                     <th><a href="?sort_by=urgency&direction={{ 'desc' if sort_by == 'urgency' and direction == 'asc' else 'asc' }}">Urgence</a></th>
                     <th><a href="?sort_by=impact&direction={{ 'desc' if sort_by == 'impact' and direction == 'asc' else 'asc' }}">Impact</a></th>
                     <th><a href="?sort_by=resources&direction={{ 'desc' if sort_by == 'resources' and direction == 'asc' else 'asc' }}">Ressources</a></th>
@@ -67,6 +68,7 @@
                 <tr>
                     <td>{{ task.name }}</td>
                     <td>{{ task.project.name if task.project else "Indépendant" }}</td>
+                    <td>{{ "%.2f"|format(task.priority) }}%</td>
                     <td>{{ "%.2f"|format(task.urgency) }}%</td>
                     <td>{{ "%.2f"|format(task.impact) }}%</td>
                     <td>{{ "%.2f"|format(task.resources) }}%</td>
@@ -93,6 +95,7 @@
                 <tr>
                     <th><a href="?sort_by=name&direction={{ 'desc' if sort_by == 'name' and direction == 'asc' else 'asc' }}">Nom</a></th>
                     <th><a href="?sort_by=project&direction={{ 'desc' if sort_by == 'project' and direction == 'asc' else 'asc' }}">Projet</a></th>
+                    <th><a href="?sort_by=priority&direction={{ 'desc' if sort_by == 'priority' and direction == 'asc' else 'asc' }}">Priorité</a></th>
                     <th><a href="?sort_by=urgency&direction={{ 'desc' if sort_by == 'urgency' and direction == 'asc' else 'asc' }}">Urgence</a></th>
                     <th><a href="?sort_by=impact&direction={{ 'desc' if sort_by == 'impact' and direction == 'asc' else 'asc' }}">Impact</a></th>
                     <th><a href="?sort_by=resources&direction={{ 'desc' if sort_by == 'resources' and direction == 'asc' else 'asc' }}">Ressources</a></th>
@@ -109,6 +112,7 @@
                 <tr>
                     <td>{{ task.name }}</td>
                     <td>{{ task.project.name if task.project else "Indépendant" }}</td>
+                    <td>{{ "%.2f"|format(task.priority) }}%</td>
                     <td>{{ "%.2f"|format(task.urgency) }}%</td>
                     <td>{{ "%.2f"|format(task.impact) }}%</td>
                     <td>{{ "%.2f"|format(task.resources) }}%</td>

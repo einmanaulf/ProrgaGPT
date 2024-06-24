@@ -3,9 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <title>Modifier {{ entity_name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.js') }}">
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            function setupAutocomplete(input, url, listId) {
+                $(input).autocomplete({
+                    source: function (request, response) {
+                        $.ajax({
+                            url: url,
+                            data: { query: request.term },
+                            success: function (data) {
+                                response(data);
+                            }
+                        });
+                    },
+                    minLength: 2,
+                    select: function (event, ui) {
+                        addResource(input, ui.item.value);
+                        return false;
+                    }
+                }).on('keydown', function (event) {
+                    if (event.key === 'Enter' && $(input).val().trim()) {
+                        event.preventDefault();
+                        addResource(input, $(input).val().trim());
+                    }
+                });
+            }
+
+            function addResource(input, value) {
+                if (!value) return;
+                const listId = $(input).data('list');
+                const list = $('#' + listId);
+                const li = $('<li>').text(value);
+                list.append(li);
+
+                const hiddenInput = $('<input>').attr({
+                    type: 'hidden',
+                    name: input.name,
+                    value: value
+                });
+                $('form').append(hiddenInput);
+
+                $(input).val('');
+            }
+
+            setupAutocomplete('input[name="protections_input"]', '/autocomplete/protections', 'protections-list');
+            setupAutocomplete('input[name="materials_input"]', '/autocomplete/materials', 'materials-list');
+            setupAutocomplete('input[name="consumables_input"]', '/autocomplete/consumables', 'consumables-list');
+            setupAutocomplete('input[name="prerequisites_input"]', '/autocomplete/prerequisites', 'prerequisites-list');
+
+            $('form').on('submit', function () {
+                $('.resource-input').each(function () {
+                    if ($(this).val().trim()) {
+                        addResource(this, $(this).val().trim());
+                    }
+                });
+            });
+        });
+    </script>
 </head>
 <body>
 <!-- Menu de navigation -->
@@ -55,23 +113,23 @@
         <input type="text" id="protocol" name="protocol" value="{{ project.protocol }}"><br>
 
         <label for="protections">Protections:</label>
-        <input type="text" id="protections" name="protections" value="">
-        <br>
+        <input type="text" class="resource-input" data-list="protections-list" name="protections_input">
+        <ul id="protections-list"></ul><br>
 
-        <label for="materials">Matériels:</label>
-        <input type="text" id="materials" name="materials" value="">
-        <br>
+        <label for="materials">Matériaux:</label>
+        <input type="text" class="resource-input" data-list="materials-list" name="materials_input">
+        <ul id="materials-list"></ul><br>
 
         <label for="consumables">Consommables:</label>
-        <input type="text" id="consumables" name="consumables" value="">
-        <br>
+        <input type="text" class="resource-input" data-list="consumables-list" name="consumables_input">
+        <ul id="consumables-list"></ul><br>
 
         <label for="prerequisites">Prérequis:</label>
-        <input type="text" id="prerequisites" name="prerequisites" value="">
-        <br>
+        <input type="text" class="resource-input" data-list="prerequisites-list" name="prerequisites_input">
+        <ul id="prerequisites-list"></ul><br>
 
         <label for="time_required">Temps requis:</label>
-        <input type="number" id="time_required" name="time_required" value="{{ project.time_required }}"><br>
+        <input type="number" id="time_required" name="time_required" value="{{ project.time_required }}">
         <select id="time_required_unit" name="time_required_unit">
             <option value="seconds" {% if project.time_required_unit == 'seconds' %}selected{% endif %}>Secondes</option>
             <option value="minutes" {% if project.time_required_unit == 'minutes' %}selected{% endif %}>Minutes</option>
@@ -89,7 +147,7 @@
         <input type="number" step="0.01" id="benefits" name="benefits" value="{{ project.benefits }}"><br>
 
         <label for="time_to_sell">Temps pour vendre:</label>
-        <input type="number" id="time_to_sell" name="time_to_sell" value="{{ project.time_to_sell }}"><br>
+        <input type="number" id="time_to_sell" name="time_to_sell" value="{{ project.time_to_sell }}">
         <select id="time_to_sell_unit" name="time_to_sell_unit">
             <option value="seconds" {% if project.time_to_sell_unit == 'seconds' %}selected{% endif %}>Secondes</option>
             <option value="minutes" {% if project.time_to_sell_unit == 'minutes' %}selected{% endif %}>Minutes</option>

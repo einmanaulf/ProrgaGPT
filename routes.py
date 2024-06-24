@@ -290,6 +290,10 @@ def list_tasks():
         tasks = Task.query.order_by(Task.name.asc()).all()
     return render_template('tasks/list.html', tasks=tasks, sort_by=sort_by, direction=direction)
 
+@app.route('/tasks/<int:id>/details', methods=['GET'])
+def task_details(id):
+    task = Task.query.get_or_404(id)
+    return render_template('tasks/details.html', task=task)
 
 @app.route('/tasks/<int:id>/edit', methods=['GET', 'POST'])
 def edit_task(id):

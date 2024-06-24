@@ -4,9 +4,66 @@
     <meta charset="UTF-8">
     <title>Modifier une tâche</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script>
+        $(document).ready(function () {
+            function setupAutocomplete(input, url, listId) {
+                $(input).autocomplete({
+                    source: function (request, response) {
+                        $.ajax({
+                            url: url,
+                            data: { query: request.term },
+                            success: function (data) {
+                                response(data);
+                            }
+                        });
+                    },
+                    minLength: 2,
+                    select: function (event, ui) {
+                        addResource(input, ui.item.value);
+                        return false;
+                    }
+                }).on('keydown', function (event) {
+                    if (event.key === 'Enter' && $(input).val().trim()) {
+                        event.preventDefault();
+                        addResource(input, $(input).val().trim());
+                    }
+                });
+            }
+
+            function addResource(input, value) {
+                if (!value) return;
+                const listId = $(input).data('list');
+                const list = $('#' + listId);
+                const li = $('<li>').text(value);
+                list.append(li);
+
+                const hiddenInput = $('<input>').attr({
+                    type: 'hidden',
+                    name: input.name,
+                    value: value
+                });
+                $('form').append(hiddenInput);
+
+                $(input).val('');
+            }
+
+            setupAutocomplete('input[name="protections_input"]', '/autocomplete/protections', 'protections-list');
+            setupAutocomplete('input[name="materials_input"]', '/autocomplete/materials', 'materials-list');
+            setupAutocomplete('input[name="consumables_input"]', '/autocomplete/consumables', 'consumables-list');
+            setupAutocomplete('input[name="prerequisites_input"]', '/autocomplete/prerequisites', 'prerequisites-list');
+
+            $('form').on('submit', function () {
+                $('.resource-input').each(function () {
+                    if ($(this).val().trim()) {
+                        addResource(this, $(this).val().trim());
+                    }
+                });
+            });
+        });
+    </script>
 </head>
 <body>
     <!-- Menu de navigation -->
@@ -44,67 +101,62 @@
     <div class="container">
         <h1>Modifier une tâche</h1>
         <form action="{{ url_for('edit_task', id=task.id) }}" method="post">
-            <input type="text" name="name" value="{{ task.name }}" required>
-            <input type="date" name="due_date" value="{{ task.due_date }}">
-            <input type="date" name="planned_date" value="{{ task.planned_date }}">
-            <input type="number" name="time_required" value="{{ task.time_required }}">
-            <input type="text" name="time_required_unit" value="{{ task.time_required_unit }}">
-            <input type="number" step="0.01" name="funding" value="{{ task.funding }}">
-            <input type="number" step="0.01" name="benefits" value="{{ task.benefits }}">
-            <input type="number" name="time_to_sell" value="{{ task.time_to_sell }}">
-            <input type="text" name="time_to_sell_unit" value="{{ task.time_to_sell_unit }}">
-            <input type="number" name="urgency" value="{{ task.urgency }}">
-            <input type="number" name="impact" value="{{ task.impact }}">
-            <input type="number" name="resources" value="{{ task.resources }}">
-            <input type="number" name="complexity" value="{{ task.complexity }}">
-            <input type="number" name="alignment" value="{{ task.alignment }}">
-            <input type="number" name="order" value="{{ task.order }}">
+            <label for="name">Nom de la tâche:</label>
+            <input type="text" id="name" name="name" value="{{ task.name }}" required><br>
 
-            <h4>Matériaux nécessaires</h4>
-            <div id="materials">
-                {% for material in materials %}
-                <div>
-                    <input type="text" class="material-name" name="material_names[]" value="{{ material.name }}">
-                    <input type="number" name="material_quantities[]" value="{{ material.quantity }}">
-                </div>
-                {% endfor %}
-            </div>
-            <button type="button" onclick="addMaterialField()">Ajouter un autre matériel</button>
+            <label for="due_date">Date d'échéance:</label>
+            <input type="date" id="due_date" name="due_date" value="{{ task.due_date }}"><br>
 
-            <h4>Consommables nécessaires</h4>
-            <div id="consumables">
-                {% for consumable in consumables %}
-                <div>
-                    <input type="text" class="consumable-name" name="consumable_names[]" value="{{ consumable.name }}">
-                    <input type="number" name="consumable_quantities[]" value="{{ consumable.quantity }}">
-                </div>
-                {% endfor %}
-            </div>
-            <button type="button" onclick="addConsumableField()">Ajouter un autre consommable</button>
+            <label for="planned_date">Date planifiée:</label>
+            <input type="date" id="planned_date" name="planned_date" value="{{ task.planned_date }}"><br>
 
-            <h4>Protections nécessaires</h4>
-            <div id="protections">
-                {% for protection in protections %}
-                <div>
-                    <input type="text" class="protection-name" name="protection_names[]" value="{{ protection.name }}">
-                    <input type="number" name="protection_quantities[]" value="{{ protection.quantity }}">
-                </div>
-                {% endfor %}
-            </div>
-            <button type="button" onclick="addProtectionField()">Ajouter une autre protection</button>
+            <label for="time_required">Temps requis:</label>
+            <input type="number" id="time_required" name="time_required" value="{{ task.time_required }}">
+            <select id="time_required_unit" name="time_required_unit">
+                <option value="seconds" {% if task.time_required_unit == 'seconds' %}selected{% endif %}>Secondes</option>
+                <option value="minutes" {% if task.time_required_unit == 'minutes' %}selected{% endif %}>Minutes</option>
+                <option value="hours" {% if task.time_required_unit == 'hours' %}selected{% endif %}>Heures</option>
+                <option value="days" {% if task.time_required_unit == 'days' %}selected{% endif %}>Jours</option>
+                <option value="weeks" {% if task.time_required_unit == 'weeks' %}selected{% endif %}>Semaines</option>
+                <option value="months" {% if task.time_required_unit == 'months' %}selected{% endif %}>Mois</option>
+                <option value="years" {% if task.time_required_unit == 'years' %}selected{% endif %}>Années</option>
+            </select><br>
 
-            <h4>Prérequis</h4>
-            <div id="prerequisites">
-                {% for prerequisite in prerequisites %}
-                <div>
-                    <input type="text" class="prerequisite-name" name="prerequisite_names[]" value="{{ prerequisite.name }}">
-                    <select name="prerequisite_types[]">
-                        <option value="task" {% if prerequisite.type == 'task' %}selected{% endif %}>Tâche</option>
-                        <option value="project" {% if prerequisite.type == 'project' %}selected{% endif %}>Projet</option>
-                    </select>
-                </div>
-                {% endfor %}
-            </div>
+            <label for="funding">Financement:</label>
+            <input type="number" step="0.01" id="funding" name="funding" value="{{ task.funding }}"><br>
+
+            <label for="benefits">Bénéfices:</label>
+            <input type="number" step="0.01" id="benefits" name="benefits" value="{{ task.benefits }}"><br>
+
+            <label for="time_to_sell">Temps pour vendre:</label>
+            <input type="number" id="time_to_sell" name="time_to_sell" value="{{ task.time_to_sell }}">
+            <select id="time_to_sell_unit" name="time_to_sell_unit">
+                <option value="seconds" {% if task.time_to_sell_unit == 'seconds' %}selected{% endif %}>Secondes</option>
+                <option value="minutes" {% if task.time_to_sell_unit == 'minutes' %}selected{% endif %}>Minutes</option>
+                <option value="hours" {% if task.time_to_sell_unit == 'hours' %}selected{% endif %}>Heures</option>
+                <option value="days" {% if task.time_to_sell_unit == 'days' %}selected{% endif %}>Jours</option>
+                <option value="weeks" {% if task.time_to_sell_unit == 'weeks' %}selected{% endif %}>Semaines</option>
+                <option value="months" {% if task.time_to_sell_unit == 'months' %}selected{% endif %}>Mois</option>
+                <option value="years" {% if task.time_to_sell_unit == 'years' %}selected{% endif %}>Années</option>
+            </select><br>
+
+             <label for="protections">Protections:</label>
+            <input type="text" class="resource-input" data-list="protections-list" name="protections_input">
+            <ul id="protections-list"></ul><br>
+
+            <label for="materials">Matériaux:</label>
+            <input type="text" class="resource-input" data-list="materials-list" name="materials_input">
+            <ul id="materials-list"></ul><br>
+
+            <label for="consumables">Consommables:</label>
+            <input type="text" class="resource-input" data-list="consumables-list" name="consumables_input">
+            <ul id="consumables-list"></ul><br>
+
+            <label for="prerequisites">Prérequis:</label>
+            <input type="text" class="resource-input" data-list="prerequisites-list" name="prerequisites_input">
+            <ul id="prerequisites-list"></ul><br>
+
+
             <button type="button" onclick="addPrerequisiteField()">Ajouter un autre prérequis</button>
 
             <button type="submit">Enregistrer les modifications</button>

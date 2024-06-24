@@ -199,4 +199,23 @@ class Funds(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     amount = db.Column(db.Float, nullable=False)
 
+class TaskResource(db.Model):
+    __tablename__ = 'task_resources'
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+    resource_id = db.Column(db.Integer)
+    resource_type = db.Column(db.String(50))
+    quantity = db.Column(db.Integer, nullable=True, default=1)
+
+    task = db.relationship('Task', backref=db.backref('task_resources', cascade='all, delete-orphan'))
+class TaskPrerequisite(db.Model):
+    __tablename__ = 'task_prerequisites'
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+    prerequisite_id = db.Column(db.Integer)
+    prerequisite_type = db.Column(db.String(50))
+
+    task = db.relationship('Task', backref=db.backref('task_prerequisites', cascade='all, delete-orphan'))
+
+
 print("Models importé")
