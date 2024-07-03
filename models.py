@@ -4,48 +4,59 @@ from datetime import date
 # Associations Tables
 task_material_association = db.Table('task_material_association',
     db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
-    db.Column('material_id', db.Integer, db.ForeignKey('material.id'))
+    db.Column('material_id', db.Integer, db.ForeignKey('material.id')),
+    extend_existing=True
 )
 
 task_protection_association = db.Table('task_protection_association',
     db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
-    db.Column('protection_id', db.Integer, db.ForeignKey('protection.id'))
+    db.Column('protection_id', db.Integer, db.ForeignKey('protection.id')),
+    extend_existing=True
 )
 
 task_consumable_association = db.Table('task_consumable_association',
     db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
-    db.Column('consumable_id', db.Integer, db.ForeignKey('consumable.id'))
+    db.Column('consumable_id', db.Integer, db.ForeignKey('consumable.id')),
+    extend_existing=True
 )
 
 task_task_association = db.Table('task_task_association',
     db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
-    db.Column('prerequisite_task_id', db.Integer, db.ForeignKey('task.id'))
+    db.Column('prerequisite_task_id', db.Integer, db.ForeignKey('task.id')),
+    extend_existing=True
 )
 
 task_project_association = db.Table('task_project_association',
     db.Column('task_id', db.Integer, db.ForeignKey('task.id')),
-    db.Column('project_id', db.Integer, db.ForeignKey('project.id'))
+    db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
+    extend_existing=True
 )
 
 project_protection_association = db.Table('project_protection_association',
     db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
-    db.Column('protection_id', db.Integer, db.ForeignKey('protection.id'))
+    db.Column('protection_id', db.Integer, db.ForeignKey('protection.id')),
+    extend_existing=True
 )
 
 project_material_association = db.Table('project_material_association',
     db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
-    db.Column('material_id', db.Integer, db.ForeignKey('material.id'))
+    db.Column('material_id', db.Integer, db.ForeignKey('material.id')),
+    extend_existing=True
 )
 
 project_consumable_association = db.Table('project_consumable_association',
     db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
-    db.Column('consumable_id', db.Integer, db.ForeignKey('consumable.id'))
+    db.Column('consumable_id', db.Integer, db.ForeignKey('consumable.id')),
+    extend_existing=True
 )
 
 project_project_association = db.Table('project_project_association',
     db.Column('project_id', db.Integer, db.ForeignKey('project.id')),
-    db.Column('prerequisite_project_id', db.Integer, db.ForeignKey('project.id'))
+    db.Column('prerequisite_project_id', db.Integer, db.ForeignKey('project.id')),
+    extend_existing=True
 )
+
+
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -80,7 +91,7 @@ class Task(db.Model):
         primaryjoin=id == task_task_association.c.task_id,
         secondaryjoin=id == task_task_association.c.prerequisite_task_id,
         backref='dependent_tasks',
-        overlaps="dependent_tasks,prerequisite_projects"
+        overlaps="dependent_tasks"
     )
 
     prerequisite_projects = db.relationship(
@@ -88,16 +99,20 @@ class Task(db.Model):
         primaryjoin=id == task_project_association.c.task_id,
         secondaryjoin=id == task_project_association.c.project_id,
         backref='tasks_requiring_this_project',
-        overlaps="dependent_projects,prerequisite_tasks"
+        overlaps="dependent_projects,projects_requiring_this_task"
     )
 
     dependent_projects = db.relationship(
         'Project', secondary=task_project_association,
         primaryjoin=id == task_project_association.c.task_id,
         secondaryjoin=id == task_project_association.c.project_id,
-        overlaps="tasks_requiring_this_project"
+        overlaps="tasks_requiring_this_project,prerequisite_projects"
     )
 
+    projects_requiring_this_task = db.relationship(
+        'Project', secondary=task_project_association,
+        overlaps="dependent_projects,prerequisite_projects,tasks_requiring_this_project"
+    )
     def __init__(self, name, project_id=None, is_done=False, due_date=None, planned_date=None, recurrence=0, time_required=0,
                  time_required_unit='seconds', funding=0, benefits=0, time_to_sell=0, time_to_sell_unit='seconds', urgency=0,
                  impact=0, resources=0, complexity=0, alignment=0, order=None):
@@ -165,18 +180,16 @@ class Project(db.Model):
         'Task', secondary=task_project_association,
         primaryjoin=id == task_project_association.c.project_id,
         secondaryjoin=id == task_project_association.c.task_id,
-        backref='projects_requiring_this_task',
-        overlaps="dependent_tasks,prerequisite_projects"
+        overlaps="dependent_tasks,projects_requiring_this_task,prerequisite_projects"
     )
 
     dependent_tasks = db.relationship(
         'Task', secondary=task_project_association,
         primaryjoin=id == task_project_association.c.project_id,
         secondaryjoin=id == task_project_association.c.task_id,
-        overlaps="projects_requiring_this_task"
+        overlaps="projects_requiring_this_task,prerequisite_tasks,tasks_requiring_this_project"
     )
 
-    tasks = db.relationship('Task', backref='project', lazy=True)
     def __init__(self, name, goal='', principle='', protocol='', time_required='0', time_required_unit='seconds', funding=0.0, benefits=0, time_to_sell='0', time_to_sell_unit='seconds', due_date=None, planned_date=None):
         self.name = name
         self.goal = goal
