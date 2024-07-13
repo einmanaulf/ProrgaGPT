@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Edit Protocol</h2>
+  <form method="POST" action="{{ url_for('protocols.edit_item', id=item.id) }}">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" value="{{ item.name }}" required><br>
+
+    <label for="goal">Goal:</label>
+    <textarea id="goal" name="goal">{{ item.goal }}</textarea><br>
+
+    <label for="principle">Principle:</label>
+    <textarea id="principle" name="principle">{{ item.principle }}</textarea><br>
+
+    <label for="protocol_text">Protocol Text:</label>
+    <textarea id="protocol_text" name="protocol_text">{{ item.protocol_text }}</textarea><br>
+
+    <label for="time_required">Time Required:</label>
+    <input type="number" id="time_required" name="time_required" value="{{ item.time_required }}"><br>
+
+    <label for="time_required_unit">Time Required Unit:</label>
+    <input type="text" id="time_required_unit" name="time_required_unit" value="{{ item.time_required_unit }}"><br>
+
+    <label for="funding">Funding:</label>
+    <input type="number" id="funding" name="funding" value="{{ item.funding }}"><br>
+
+    <label for="benefits">Benefits:</label>
+    <input type="number" id="benefits" name="benefits" value="{{ item.benefits }}"><br>
+
+    <label for="time_to_sell">Time to Sell:</label>
+    <input type="number" id="time_to_sell" name="time_to_sell" value="{{ item.time_to_sell }}"><br>
+
+    <label for="time_to_sell_unit">Time to Sell Unit:</label>
+    <input type="text" id="time_to_sell_unit" name="time_to_sell_unit" value="{{ item.time_to_sell_unit }}"><br>
+
+    <button type="submit">Save</button>
+  </form>
+{% endblock %}

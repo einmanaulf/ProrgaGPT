@@ -19,7 +19,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # Assurez-vous que les modèles sont importés
-from models import *  # Importer tous les modèles ici
+import models  # Importer tous les modèles ici
 
 if __name__ == "__main__":
     from routes import *  # Importer les routes ici pour éviter les importations circulaires

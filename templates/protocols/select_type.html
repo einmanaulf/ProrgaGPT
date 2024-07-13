@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Select Protocol Type</h2>
+  <form method="GET" action="{{ url_for('protocols.select_project_for_protocol') }}">
+    <button type="submit">Create Protocol from Project</button>
+  </form>
+  <form method="POST" action="{{ url_for('protocols.create_item') }}">
+    <button type="submit">Create New Protocol</button>
+  </form>
+{% endblock %}

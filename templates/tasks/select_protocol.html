@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Select Protocol for Task</h2>
+  <form method="POST" action="{{ url_for('tasks.create_task_from_protocol') }}">
+    <label for="protocol_id">Protocol:</label>
+    <select id="protocol_id" name="protocol_id">
+      {% for protocol in protocols %}
+        <option value="{{ protocol.id }}">{{ protocol.name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Create Task from Protocol</button>
+  </form>
+{% endblock %}

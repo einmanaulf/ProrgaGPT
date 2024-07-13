@@ -1,52 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Détails du consommable</title>
-    <link rel="stylesheet" href="/static/main.js">
-</head>
-<body>
-<!-- Menu de navigation -->
-        <nav>
-    <ul>
-        <li><a href="/">Accueil</a></li>
-        <li>Tâches :</li>
-        <ul>
-            <li><a href="/tasks/list">Liste des tâches</a></li>
-            <li><a href="/tasks/create">Créer une tâche</a></li>
-        </ul>
-        <li>Projets :</li>
-        <ul>
-            <li><a href="/projects/list">Liste des projets</a></li>
-            <li><a href="/projects/create">Créer un projet</a></li>
-        </ul>
-        <li>Protections :</li>
-        <ul>
-            <li><a href="/protections/list">Liste des protections</a></li>
-            <li><a href="/protections/create">Créer une protection</a></li>
-        </ul>
-        <li>Matériels :</li>
-        <ul>
-            <li><a href="/materials/list">Liste des matériels</a></li>
-            <li><a href="/materials/create">Créer un matériel</a></li>
-        </ul>
-        <li>Consommables :</li>
-        <ul>
-            <li><a href="/consumables/list">Liste des consommables</a></li>
-            <li><a href="/consumables/create">Créer un consommable</a></li>
-        </ul>
-    </ul>
-</nav>
+{% extends "base.html" %}
 
+{% block content %}
     <div class="container">
-        <h1>Détails du consommable</h1>
-        <p><strong>Nom:</strong> {{ consumable.name }}</p>
-        <p><strong>Quantité:</strong> {{ consumable.quantity }}</p>
-        <a href="/consumables/{{ consumable.id }}/edit">Modifier</a>
-        <form action="{{ url_for('delete_consumable', id=consumable.id) }}" method="post" style="display:inline;">
-            <button type="submit">Supprimer</button>
+        <h2>Consumable Details</h2>
+        <ul>
+            <li><strong>Name:</strong> {{ item.name }}</li>
+            <li><strong>Quantity:</strong> {{ item.quantity }}</li>
+            <li><strong>Last Modified:</strong> {{ item.last_modified }}</li>
+        </ul>
+        <a href="{{ url_for('consumables.edit_item', id=item.id) }}" class="btn btn-primary">Edit</a>
+        <form method="POST" action="{{ url_for('consumables.delete_item', id=item.id) }}" style="display:inline;">
+            <button type="submit" class="btn btn-danger">Delete</button>
         </form>
-        <a href="/consumables/list">Retour à la liste des consommables</a>
     </div>
-</body>
-</html>
+{% endblock %}

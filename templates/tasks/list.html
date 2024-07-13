@@ -1,132 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Liste des tâches</title>
-    <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-<nav>
-    <ul>
-        <li><a href="/">Accueil</a></li>
-        <li>Tâches :</li>
-        <ul>
-            <li><a href="/tasks/list">Liste des tâches</a></li>
-            <li><a href="/tasks/create">Créer une tâche</a></li>
-        </ul>
-        <li>Projets :</li>
-        <ul>
-            <li><a href="/projects/list">Liste des projets</a></li>
-            <li><a href="/projects/create">Créer un projet</a></li>
-        </ul>
-        <li>Protections :</li>
-        <ul>
-            <li><a href="/protections/list">Liste des protections</a></li>
-            <li><a href="/protections/create">Créer une protection</a></li>
-        </ul>
-        <li>Matériels :</li>
-        <ul>
-            <li><a href="/materials/list">Liste des matériels</a></li>
-            <li><a href="/materials/create">Créer un matériel</a></li>
-        </ul>
-        <li>Consommables :</li>
-        <ul>
-            <li><a href="/consumables/list">Liste des consommables</a></li>
-            <li><a href="/consumables/create">Créer un consommable</a></li>
-        </ul>
-    </ul>
-</nav>
+{% extends "base.html" %}
 
-<div class="container">
-    <h1>Liste des tâches</h1>
-    <h2>Tâches à faire</h2>
-    <table>
-        <thead>
-            <tr>
-                <th><a href="?sort_by=name&direction={{ 'desc' if sort_by == 'name' and direction == 'asc' else 'asc' }}">Nom</a></th>
-                <th><a href="?sort_by=project&direction={{ 'desc' if sort_by == 'project' and direction == 'asc' else 'asc' }}">Projet</a></th>
-                <th><a href="?sort_by=priority&direction={{ 'desc' if sort_by == 'priority' and direction == 'asc' else 'asc' }}">Priorité</a></th>
-                <th><a href="?sort_by=urgency&direction={{ 'desc' if sort_by == 'urgency' and direction == 'asc' else 'asc' }}">Urgence</a></th>
-                <th><a href="?sort_by=impact&direction={{ 'desc' if sort_by == 'impact' and direction == 'asc' else 'asc' }}">Impact</a></th>
-                <th><a href="?sort_by=resources&direction={{ 'desc' if sort_by == 'resources' and direction == 'asc' else 'asc' }}">Ressources</a></th>
-                <th><a href="?sort_by=complexity&direction={{ 'desc' if sort_by == 'complexity' and direction == 'asc' else 'asc' }}">Complexité</a></th>
-                <th><a href="?sort_by=alignment&direction={{ 'desc' if sort_by == 'alignment' and direction == 'asc' else 'asc' }}">Alignement</a></th>
-                <th><a href="?sort_by=due_date&direction={{ 'desc' if sort_by == 'due_date' and direction == 'asc' else 'asc' }}">Date d'échéance</a></th>
-                <th><a href="?sort_by=planned_date&direction={{ 'desc' if sort_by == 'planned_date' and direction == 'asc' else 'asc' }}">Date de réalisation</a></th>
-                <th><a href="?sort_by=recurrence&direction={{ 'desc' if sort_by == 'recurrence' and direction == 'asc' else 'asc' }}">Récurrence</a></th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for task in tasks if not task.is_done %}
-            <tr>
-                <td>{{ task.name }}</td>
-                <td>{{ task.project.name if task.project else "Indépendant" }}</td>
-                <td>{{ "%.2f"|format(task.priority) }}%</td>
-                <td>{{ "%.2f"|format(task.urgency) }}%</td>
-                <td>{{ "%.2f"|format(task.impact) }}%</td>
-                <td>{{ "%.2f"|format(task.resources) }}%</td>
-                <td>{{ "%.2f"|format(task.complexity) }}%</td>
-                <td>{{ "%.2f"|format(task.alignment) }}%</td>
-                <td>{{ task.due_date if task.due_date else "Aucune" }}</td>
-                <td>{{ task.planned_date if task.planned_date else "Aucune" }}</td>
-                <td>{{ task.recurrence if task.recurrence else "Aucune" }}</td>
-                <td>
-                    <a href="/tasks/{{ task.id }}/mark_done">Marquer comme terminée</a>
-                    <a href="/tasks/{{ task.id }}/details">Détails</a>
-                    <a href="/tasks/{{ task.id }}/edit">Modifier</a>
-                    <form action="{{ url_for('delete_task', id=task.id) }}" method="post" style="display:inline;">
-                        <button type="submit">Supprimer</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <h2>Tâches faites</h2>
-    <table>
-        <thead>
-            <tr>
-                <th><a href="?sort_by=name&direction={{ 'desc' if sort_by == 'name' and direction == 'asc' else 'asc' }}">Nom</a></th>
-                <th><a href="?sort_by=project&direction={{ 'desc' if sort_by == 'project' and direction == 'asc' else 'asc' }}">Projet</a></th>
-                <th><a href="?sort_by=urgency&direction={{ 'desc' if sort_by == 'urgency' and direction == 'asc' else 'asc' }}">Urgence</a></th>
-                <th><a href="?sort_by=impact&direction={{ 'desc' if sort_by == 'impact' and direction == 'asc' else 'asc' }}">Impact</a></th>
-                <th><a href="?sort_by=resources&direction={{ 'desc' if sort_by == 'resources' and direction == 'asc' else 'asc' }}">Ressources</a></th>
-                <th><a href="?sort_by=complexity&direction={{ 'desc' if sort_by == 'complexity' and direction == 'asc' else 'asc' }}">Complexité</a></th>
-                <th><a href="?sort_by=alignment&direction={{ 'desc' if sort_by == 'alignment' and direction == 'asc' else 'asc' }}">Alignement</a></th>
-                <th><a href="?sort_by=due_date&direction={{ 'desc' if sort_by == 'due_date' and direction == 'asc' else 'asc' }}">Date d'échéance</a></th>
-                <th><a href="?sort_by=planned_date&direction={{ 'desc' if sort_by == 'planned_date' and direction == 'asc' else 'asc' }}">Date de réalisation</a></th>
-                <th><a href="?sort_by=recurrence&direction={{ 'desc' if sort_by == 'recurrence' and direction == 'asc' else 'asc' }}">Récurrence</a></th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for task in tasks if task.is_done %}
-            <tr>
-                <td>{{ task.name }}</td>
-                <td>{{ task.project.name if task.project else "Indépendant" }}</td>
-                <td>{{ "%.2f"|format(task.urgency) }}%</td>
-                <td>{{ "%.2f"|format(task.impact) }}%</td>
-                <td>{{ "%.2f"|format(task.resources) }}%</td>
-                <td>{{ "%.2f"|format(task.complexity) }}%</td>
-                <td>{{ "%.2f"|format(task.alignment) }}%</td>
-                <td>{{ task.due_date if task.due_date else "Aucune" }}</td>
-                <td>{{ task.planned_date if task.planned_date else "Aucune" }}</td>
-                <td>{{ task.recurrence if task.recurrence else "Aucune" }}</td>
-                <td>
-                    <a href="{{ url_for('mark_task_undone', id=task.id) }}">Marquer comme non terminée</a>
-                    <a href="/tasks/{{ task.id }}/details">Détails</a>
-                    <a href="/tasks/{{ task.id }}/edit">Modifier</a>
-                    <form action="{{ url_for('delete_task', id=task.id) }}" method="post" style="display:inline;">
-                        <button type="submit">Supprimer</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="/tasks/create">Créer une nouvelle tâche</a>
-    <a href="/">Retour à l'accueil</a>
-</div>
-</body>
-</html>
+{% block content %}
+  <h2>Task List</h2>
+  <table>
+    <thead>
+      <tr>
+        <th><a href="{{ url_for('tasks.list_items', sort_by='name', direction='asc' if sort_by != 'name' or direction == 'desc' else 'desc') }}">Name</a></th>
+        <th>Goal</th>
+        <th>Principle</th>
+        <th>Time Required</th>
+        <th>Funding</th>
+        <th>Benefits</th>
+        <th>Due Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for task in items %}
+        <tr>
+          <td>{{ task.name }}</td>
+          <td>{{ task.goal }}</td>
+          <td>{{ task.principle }}</td>
+          <td>{{ task.time_required }} {{ task.time_required_unit }}</td>
+          <td>{{ task.funding }}</td>
+          <td>{{ task.benefits }}</td>
+          <td>{{ task.due_date }}</td>
+          <td>
+            <a href="{{ url_for('tasks.item_details', id=task.id) }}">Details</a>
+            <a href="{{ url_for('tasks.edit_item', id=task.id) }}">Edit</a>
+            <form method="POST" action="{{ url_for('tasks.delete_item', id=task.id) }}" style="display:inline;">
+              <button type="submit">Delete</button>
+            </form>
+            <a href="{{ url_for('tasks.mark_task_done', id=task.id) }}">Mark as Done</a>
+            <a href="{{ url_for('tasks.mark_task_undone', id=task.id) }}">Mark as Undone</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a href="{{ url_for('tasks.create_item') }}">Create New Task</a>
+{% endblock %}

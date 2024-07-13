@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Item{% endblock %}
+
+{% block content %}
+<h1>Edit {{ model_name }}</h1>
+<form method="POST">
+    {# Include form fields specific to the model here #}
+    <button type="submit">Save</button>
+</form>
+<a href="{{ url_for(blueprint_name + '.item_details', id=item.id) }}">Cancel</a>
+{% endblock %}

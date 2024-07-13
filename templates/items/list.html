@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}List of Items{% endblock %}
+
+{% block content %}
+<h1>List of {{ model_name }}</h1>
+<table>
+    <thead>
+        <tr>
+            {# Include table headers specific to the model here #}
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            {# Include table data specific to the model here #}
+            <td><a href="{{ url_for(blueprint_name + '.item_details', id=item.id) }}">Details</a></td>
+            <td><a href="{{ url_for(blueprint_name + '.edit_item', id=item.id) }}">Edit</a></td>
+            <td>
+                <form method="POST" action="{{ url_for(blueprint_name + '.delete_item', id=item.id) }}">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{{ url_for(blueprint_name + '.create_item') }}">Create New {{ model_name }}</a>
+{% endblock %}

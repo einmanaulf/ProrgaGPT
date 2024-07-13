@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Protocol Details</h2>
+  <p><strong>Name:</strong> {{ item.name }}</p>
+  <p><strong>Goal:</strong> {{ item.goal }}</p>
+  <p><strong>Principle:</strong> {{ item.principle }}</p>
+  <p><strong>Protocol Text:</strong> {{ item.protocol_text }}</p>
+  <p><strong>Time Required:</strong> {{ item.time_required }} {{ item.time_required_unit }}</p>
+  <p><strong>Funding:</strong> {{ item.funding }}</p>
+  <p><strong>Benefits:</strong> {{ item.benefits }}</p>
+  <p><strong>Time to Sell:</strong> {{ item.time_to_sell }} {{ item.time_to_sell_unit }}</p>
+
+  <a href="{{ url_for('protocols.edit_item', id=item.id) }}">Edit</a>
+  <form method="POST" action="{{ url_for('protocols.delete_item', id=item.id) }}" style="display:inline;">
+    <button type="submit">Delete</button>
+  </form>
+{% endblock %}

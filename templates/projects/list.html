@@ -1,80 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Liste des projets</title>
-    <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-<nav>
-    <ul>
-        <li><a href="/">Accueil</a></li>
-        <li>Tâches :</li>
-        <ul>
-            <li><a href="/tasks/list">Liste des tâches</a></li>
-            <li><a href="/tasks/create">Créer une tâche</a></li>
-        </ul>
-        <li>Projets :</li>
-        <ul>
-            <li><a href="/projects/list">Liste des projets</a></li>
-            <li><a href="/projects/create">Créer un projet</a></li>
-        </ul>
-        <li>Protections :</li>
-        <ul>
-            <li><a href="/protections/list">Liste des protections</a></li>
-            <li><a href="/protections/create">Créer une protection</a></li>
-        </ul>
-        <li>Matériels :</li>
-        <ul>
-            <li><a href="/materials/list">Liste des matériels</a></li>
-            <li><a href="/materials/create">Créer un matériel</a></li>
-        </ul>
-        <li>Consommables :</li>
-        <ul>
-            <li><a href="/consumables/list">Liste des consommables</a></li>
-            <li><a href="/consumables/create">Créer un consommable</a></li>
-        </ul>
-    </ul>
-</nav>
+{% extends "base.html" %}
 
-<div class="container">
-    <h1>Liste des projets</h1>
-    <table>
-        <thead>
-            <tr>
-                <th><a href="?sort_by=name&direction={{ 'desc' if sort_by == 'name' and direction == 'asc' else 'asc' }}">Nom</a></th>
-                <th><a href="?sort_by=urgency&direction={{ 'desc' if sort_by == 'urgency' and direction == 'asc' else 'asc' }}">Urgence</a></th>
-                <th><a href="?sort_by=impact&direction={{ 'desc' if sort_by == 'impact' and direction == 'asc' else 'asc' }}">Impact</a></th>
-                <th><a href="?sort_by=resources&direction={{ 'desc' if sort_by == 'resources' and direction == 'asc' else 'asc' }}">Ressources</a></th>
-                <th><a href="?sort_by=complexity&direction={{ 'desc' if sort_by == 'complexity' and direction == 'asc' else 'asc' }}">Complexité</a></th>
-                <th><a href="?sort_by=alignment&direction={{ 'desc' if sort_by == 'alignment' and direction == 'asc' else 'asc' }}">Alignement</a></th>
-                <th><a href="?sort_by=priority&direction={{ 'desc' if sort_by == 'priority' and direction == 'asc' else 'asc' }}">Priorité</a></th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for project in projects %}
-            <tr>
-                <td>{{ project.name }}</td>
-                <td>{{ "%.2f"|format(project.urgency) }}%</td>
-                <td>{{ "%.2f"|format(project.impact) }}%</td>
-                <td>{{ "%.2f"|format(project.resources) }}%</td>
-                <td>{{ "%.2f"|format(project.complexity) }}%</td>
-                <td>{{ "%.2f"|format(project.alignment) }}%</td>
-                <td>{{ "%.2f"|format(project.priority) }}%</td>
-                <td>
-                    <a href="/projects/{{ project.id }}/details">Détails</a>
-                    <a href="/projects/{{ project.id }}/edit">Modifier</a>
-                    <form action="{{ url_for('delete_project', id=project.id) }}" method="post" style="display:inline;">
-                        <button type="submit">Supprimer</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <a href="/projects/create">Créer un nouveau projet</a>
-    <a href="/">Retour à l'accueil</a>
-</div>
-</body>
-</html>
+{% block content %}
+  <h2>Projects</h2>
+  <table>
+    <thead>
+      <tr>
+        <th><a href="{{ url_for('projects.list_items', sort_by='name', direction='asc') }}">Name</a></th>
+        <th><a href="{{ url_for('projects.list_items', sort_by='goal', direction='asc') }}">Goal</a></th>
+        <th><a href="{{ url_for('projects.list_items', sort_by='due_date', direction='asc') }}">Due Date</a></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td><a href="{{ url_for('projects.item_details', id=item.id) }}">{{ item.name }}</a></td>
+          <td>{{ item.goal }}</td>
+          <td>{{ item.due_date }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a href="{{ url_for('projects.create_item') }}">Create New Project</a>
+{% endblock %}

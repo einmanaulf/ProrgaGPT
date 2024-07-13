@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Details of Item{% endblock %}
+
+{% block content %}
+<h1>Details of {{ model_name }}</h1>
+<p>ID: {{ item.id }}</p>
+{# Include other fields specific to the model here #}
+<a href="{{ url_for(blueprint_name + '.edit_item', id=item.id) }}">Edit</a>
+<a href="{{ url_for(blueprint_name + '.list_items') }}">Back to List</a>
+{% endblock %}

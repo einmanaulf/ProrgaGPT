@@ -3,12 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prorga</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>{% block title %}My Application{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1 class="mt-5">Bienvenue sur Prorga</h1>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('tasks.list_items') }}">Tasks</a></li>
+            <li><a href="{{ url_for('projects.list_items') }}">Projects</a></li>
+            <li><a href="{{ url_for('protocols.list_items') }}">Protocols</a></li>
+            <li><a href="{{ url_for('materials.list_items') }}">Materials</a></li>
+            <li><a href="{{ url_for('consumables.list_items') }}">Consumables</a></li>
+            <li><a href="{{ url_for('protections.list_items') }}">Protections</a></li>
+        </ul>
+    </nav>
+    <div class="content">
         {% block content %}{% endblock %}
     </div>
 </body>

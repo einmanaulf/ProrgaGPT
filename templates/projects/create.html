@@ -1,237 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Créer un projet</title>
-    <link rel="stylesheet" href="/static/styles.css">
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            function setupAutocomplete(input, url, listId) {
-                $(input).autocomplete({
-                    source: function (request, response) {
-                        $.ajax({
-                            url: url,
-                            data: { query: request.term },
-                            success: function (data) {
-                                response(data);
-                            }
-                        });
-                    },
-                    minLength: 2,
-                    select: function (event, ui) {
-                        addResource(input, ui.item.value);
-                        return false;
-                    }
-                }).on('keydown', function (event) {
-                    if (event.key === 'Enter' && $(input).val().trim()) {
-                        event.preventDefault();
-                        addResource(input, $(input).val().trim());
-                    }
-                });
-            }
+{% extends "base.html" %}
 
-            function addResource(input, value) {
-                if (!value) return;
-                const listId = $(input).data('list');
-                const list = $('#' + listId);
-                const li = $('<li>').text(value);
-                list.append(li);
+{% block content %}
+  <h2>Create Project</h2>
+  <form method="POST" action="{{ url_for('projects.create_item') }}">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required><br>
 
-                const hiddenInput = $('<input>').attr({
-                    type: 'hidden',
-                    name: input.name,
-                    value: value
-                });
-                $('form').append(hiddenInput);
+    <label for="goal">Goal:</label>
+    <input type="text" id="goal" name="goal"><br>
 
-                $(input).val('');
-            }
+    <label for="principle">Principle:</label>
+    <input type="text" id="principle" name="principle"><br>
 
-            setupAutocomplete('input[name="protections_input"]', '/autocomplete/protections', 'protections-list');
-            setupAutocomplete('input[name="materials_input"]', '/autocomplete/materials', 'materials-list');
-            setupAutocomplete('input[name="consumables_input"]', '/autocomplete/consumables', 'consumables-list');
-            setupAutocomplete('input[name="prerequisites_input"]', '/autocomplete/prerequisites', 'prerequisites-list');
+    <label for="protocol_text">Protocol Text:</label>
+    <textarea id="protocol_text" name="protocol_text"></textarea><br>
 
-            $('form').on('submit', function () {
-                $('.resource-input').each(function () {
-                    if ($(this).val().trim()) {
-                        addResource(this, $(this).val().trim());
-                    }
-                });
-            });
-        });
-    </script>
-</head>
-<body>
-    <nav>
-        <ul>
-            <li><a href="/">Accueil</a></li>
-            <li>Tâches :</li>
-            <ul>
-                <li><a href="/tasks/list">Liste des tâches</a></li>
-                <li><a href="/tasks/create">Créer une tâche</a></li>
-            </ul>
-            <li>Projets :</li>
-            <ul>
-                <li><a href="/projects/list">Liste des projets</a></li>
-                <li><a href="/projects/create">Créer un projet</a></li>
-            </ul>
-            <li>Protections :</li>
-            <ul>
-                <li><a href="/protections/list">Liste des protections</a></li>
-                <li><a href="/protections/create">Créer une protection</a></li>
-            </ul>
-            <li>Matériels :</li>
-            <ul>
-                <li><a href="/materials/list">Liste des matériels</a></li>
-                <li><a href="/materials/create">Créer un matériel</a></li>
-            </ul>
-            <li>Consommables :</li>
-            <ul>
-                <li><a href="/consumables/list">Liste des consommables</a></li>
-                <li><a href="/consumables/create">Créer un consommable</a></li>
-            </ul>
-        </ul>
-    </nav>
+    <label for="time_required">Time Required:</label>
+    <input type="number" id="time_required" name="time_required"><br>
 
-    <div class="container">
-        <h1>Créer un nouveau projet</h1>
-        <form action="/projects/create" method="post">
-            <label for="name">Nom:</label>
-            <input type="text" id="name" name="name" required><br>
+    <label for="time_required_unit">Time Required Unit:</label>
+    <input type="text" id="time_required_unit" name="time_required_unit" value="seconds"><br>
 
-            <label for="goal">Objectif:</label>
-            <input type="text" id="goal" name="goal"><br>
+    <label for="funding">Funding:</label>
+    <input type="number" id="funding" name="funding"><br>
 
-            <label for="principle">Principe:</label>
-            <input type="text" id="principle" name="principle"><br>
+    <label for="benefits">Benefits:</label>
+    <input type="number" id="benefits" name="benefits"><br>
 
-            <label for="protocol">Protocole:</label>
-            <input type="text" id="protocol" name="protocol"><br>
+    <label for="time_to_sell">Time to Sell:</label>
+    <input type="number" id="time_to_sell" name="time_to_sell"><br>
 
-            <!-- Matériaux -->
-            <div id="materials">
-                <label for="material_names">Materials:</label>
-                <div class="resource">
-                    <input type="text" name="material_names[]" placeholder="Material name">
-                    <input type="number" name="material_quantities[]" placeholder="Quantity" value="1">
-                </div>
-            </div>
-            <button type="button" onclick="addMaterial()">Add Another Material</button>
+    <label for="time_to_sell_unit">Time to Sell Unit:</label>
+    <input type="text" id="time_to_sell_unit" name="time_to_sell_unit" value="seconds"><br>
 
-            <!-- Consommables -->
-            <div id="consumables">
-                <label for="consumable_names">Consumables:</label>
-                <div class="resource">
-                    <input type="text" name="consumable_names[]" placeholder="Consumable name">
-                    <input type="number" name="consumable_quantities[]" placeholder="Quantity" value="1">
-                </div>
-            </div>
-            <button type="button" onclick="addConsumable()">Add Another Consumable</button>
+    <label for="due_date">Due Date:</label>
+    <input type="date" id="due_date" name="due_date"><br>
 
-            <!-- Protections -->
-            <div id="protections">
-                <label for="protection_names">Protections:</label>
-                <div class="resource">
-                    <input type="text" name="protection_names[]" placeholder="Protection name">
-                    <input type="number" name="protection_quantities[]" placeholder="Quantity" value="1">
-                </div>
-            </div>
-            <button type="button" onclick="addProtection()">Add Another Protection</button>
+    <label for="planned_date">Planned Date:</label>
+    <input type="date" id="planned_date" name="planned_date"><br>
 
-            <label for="time_required">Temps requis:</label>
-            <input type="number" id="time_required" name="time_required">
-
-            <select id="time_required_unit" name="time_required_unit">
-                <option value="seconds">Secondes</option>
-                <option value="minutes">Minutes</option>
-                <option value="hours">Heures</option>
-                <option value="days">Jours</option>
-                <option value="weeks">Semaines</option>
-                <option value="months">Mois</option>
-                <option value="years">Années</option>
-            </select><br>
-
-            <label for="funding">Financement:</label>
-            <input type="number" id="funding" name="funding"><br>
-
-            <label for="benefits">Bénéfices:</label>
-            <input type="number" id="benefits" name="benefits"><br>
-
-            <label for="time_to_sell">Temps pour vendre:</label>
-            <input type="number" id="time_to_sell" name="time_to_sell">
-
-            <select id="time_to_sell_unit" name="time_to_sell_unit">
-                <option value="seconds">Secondes</option>
-                <option value="minutes">Minutes</option>
-                <option value="hours">Heures</option>
-                <option value="days">Jours</option>
-                <option value="weeks">Semaines</option>
-                <option value="months">Mois</option>
-                <option value="years">Années</option>
-            </select><br>
-
-            <label for="due_date">Date d'échéance:</label>
-            <input type="date" id="due_date" name="due_date"><br>
-
-            <label for="planned_date">Date de réalisation:</label>
-            <input type="date" id="planned_date" name="planned_date"><br>
-
-            <!-- Sélection des prérequis (projets et tâches) -->
-            <label for="prerequisite_project_ids">Prerequisites (Projects):</label>
-            <select multiple name="prerequisite_project_ids[]">
-                {% for project in projects %}
-                    <option value="{{ project.id }}">{{ project.name }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="prerequisite_task_ids">Prerequisites (Tasks):</label>
-            <select multiple name="prerequisite_task_ids[]">
-                {% for task in tasks %}
-                    <option value="{{ task.id }}">{{ task.name }}</option>
-                {% endfor %}
-            </select>
-
-            <button type="submit">Créer le projet</button>
-        </form>
-        <a href="/projects/list">Retour à la liste des projets</a>
-    </div>
-    <script>
-        function addMaterial() {
-            const materialsDiv = document.getElementById('materials');
-            const newMaterial = document.createElement('div');
-            newMaterial.className = 'resource';
-            newMaterial.innerHTML = `
-                <input type="text" name="material_names[]" placeholder="Material name">
-                <input type="number" name="material_quantities[]" placeholder="Quantity" value="1">
-            `;
-            materialsDiv.appendChild(newMaterial);
-        }
-
-        function addConsumable() {
-            const consumablesDiv = document.getElementById('consumables');
-            const newConsumable = document.createElement('div');
-            newConsumable.className = 'resource';
-            newConsumable.innerHTML = `
-                <input type="text" name="consumable_names[]" placeholder="Consumable name">
-                <input type="number" name="consumable_quantities[]" placeholder="Quantity" value="1">
-            `;
-            consumablesDiv.appendChild(newConsumable);
-        }
-
-        function addProtection() {
-            const protectionsDiv = document.getElementById('protections');
-            const newProtection = document.createElement('div');
-            newProtection.className = 'resource';
-            newProtection.innerHTML = `
-                <input type="text" name="protection_names[]" placeholder="Protection name">
-                <input type="number" name="protection_quantities[]" placeholder="Quantity" value="1">
-            `;
-            protectionsDiv.appendChild(newProtection);
-        }
-    </script>
-</body>
-</html>
+    <button type="submit">Create</button>
+  </form>
+{% endblock %}
